@@ -14,6 +14,10 @@ find_package(OpenCV REQUIRED)
 #uncomment the following 4 lines to use the Eigen library
 find_package(cmake_modules REQUIRED)
 find_package(Eigen3 REQUIRED)
+
+find_package(Ceres REQUIRED)
+message(STATUS "-- Found Ceres version ${CERES_VERSION}: ${CERES_INCLUDE_DIRS}")
+
 include_directories(${EIGEN3_INCLUDE_DIR})
 add_definitions(${EIGEN_DEFINITIONS})
 
@@ -45,6 +49,10 @@ cs_add_executable(ipcam_svc src/ipcam_svc.cpp)
 cs_add_executable(test_find_contours src/test_find_contours.cpp)
 cs_add_executable(test_find_patterns src/test_find_patterns.cpp)
 
+cs_add_executable(optimize src/wsn_cam_calib_ceres.cpp)
+cs_add_executable(optimize_randnoise src/wsn_cam_calib_ceres_randnoise.cpp)
+cs_add_executable(extrinsic src/wsn_cam_calib_ceres_EXTRINSIC.cpp)
+
 #cs_add_executable(harris_corners src/harris_corners.cpp)
 #the following is required, if desire to link a node in this package with a library created in this same package
 # edit the arguments to reference the named node and named library within this package
@@ -56,6 +64,11 @@ target_link_libraries( ipcam ${OpenCV_LIBS})
 target_link_libraries( ipcam_svc ${OpenCV_LIBS})
 target_link_libraries( test_find_contours circle_detector ${OpenCV_LIBS})
 target_link_libraries( test_find_patterns circle_detector ${OpenCV_LIBS})
+
+target_link_libraries(optimize ${OpenCV_LIBS} ${CERES_LIBRARIES})
+target_link_libraries(extrinsic ${OpenCV_LIBS} ${CERES_LIBRARIES})
+target_link_libraries(optimize_randnoise ${OpenCV_LIBS} ${CERES_LIBRARIES})
+
 cs_install()
 cs_export()
     
