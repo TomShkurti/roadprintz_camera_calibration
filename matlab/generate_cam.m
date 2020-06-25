@@ -1,3 +1,5 @@
+format long;
+
 [sprays_x, sprays_y] = meshgrid(2.6 : 0.2 : 4.0, -1.0 : 0.2 : 1.0);
 sprays_x = reshape(sprays_x, [], 1);
 sprays_y = reshape(sprays_y, [], 1);
@@ -17,12 +19,19 @@ gt_CAM_to_FOREARM = [
 	0 0 0 1
 ];
 
+camera_premod = [
+	1 0 0 0;
+	0 0 1 0;
+	0 1 0 0;
+	0 0 0 1
+];
+
 FOREARM_to_BASE_all = csvread('arm_positions.csv');
 FOREARM_to_BASE_all = FOREARM_to_BASE_all(:, 1 : end - 1);
 FOREARM_to_BASE_all = reshape(FOREARM_to_BASE_all, [], 4, 4);
 for i = 1 : size(FOREARM_to_BASE_all, 1)
 	%They get read in transposed for some reason.
-	FOREARM_to_BASE_all(i, :, :) = squeeze(FOREARM_to_BASE_all(i, :, :))';
+	FOREARM_to_BASE_all(i, :, :) = camera_premod * squeeze(FOREARM_to_BASE_all(i, :, :))';
 end
 
 BASE_to_POINT_all = nan(size(sprays_x, 1), 4, 4);
@@ -52,11 +61,18 @@ for s = 1 : size(BASE_to_POINT_all, 1)
 		FOREARM_to_BASE = squeeze(FOREARM_to_BASE_all(v, :, :));
 		CAM_to_POINT = gt_CAM_to_FOREARM * FOREARM_to_BASE * BASE_to_POINT;
 		
+		if(i == 1)
+			BASE_to_POINT
+			FOREARM_to_BASE
+			%reshape(FOREARM_to_BASE', 1, [])
+			CAM_to_POINT
+		end
+		
 		point = [CAM_to_POINT(1, 4); CAM_to_POINT(2, 4); CAM_to_POINT(3, 4); 1];
 		projected_point = gt_proj * point;
 		
 		data_lines(i, :) = [
-			reshape(BASE_to_POINT, 1, []) reshape(FOREARM_to_BASE, 1, []) 0 0
+			reshape(BASE_to_POINT, 1, []) reshape(FOREARM_to_BASE', 1, []) 0 0
 		];
 		data_lines(i, 33) = projected_point(1) / projected_point(3);
 		data_lines(i, 34) = projected_point(2) / projected_point(3);
