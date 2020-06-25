@@ -52,6 +52,7 @@ cs_add_executable(test_find_patterns src/test_find_patterns.cpp)
 cs_add_executable(optimize src/wsn_cam_calib_ceres.cpp)
 cs_add_executable(optimize_randnoise src/wsn_cam_calib_ceres_randnoise.cpp)
 cs_add_executable(extrinsic src/wsn_cam_calib_ceres_EXTRINSIC.cpp)
+cs_add_executable(camera src/wsn_cam_calib_ceres_CAMERA.cpp)
 
 #cs_add_executable(harris_corners src/harris_corners.cpp)
 #the following is required, if desire to link a node in this package with a library created in this same package
@@ -67,6 +68,7 @@ target_link_libraries( test_find_patterns circle_detector ${OpenCV_LIBS})
 
 target_link_libraries(optimize ${OpenCV_LIBS} ${CERES_LIBRARIES})
 target_link_libraries(extrinsic ${OpenCV_LIBS} ${CERES_LIBRARIES})
+target_link_libraries(camera ${OpenCV_LIBS} ${CERES_LIBRARIES})
 target_link_libraries(optimize_randnoise ${OpenCV_LIBS} ${CERES_LIBRARIES})
 
 cs_install()
