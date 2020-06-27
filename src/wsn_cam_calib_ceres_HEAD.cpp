@@ -81,6 +81,18 @@ ceres::AngleAxisRotatePoint(rotation_axis, nominal_axis_x, motion_axis_x);
 ceres::AngleAxisRotatePoint(rotation_axis, nominal_axis_y, motion_axis_y);
 ceres::AngleAxisRotatePoint(rotation_axis, nominal_axis_z, motion_axis_z);*/
 
+inline double dtor(double d){
+	return (d * 3.14159) / 180.0;
+}
+
+template <typename T>
+inline void transformPoint_rm(const T translation[3], const T rotation[9], const T point_in[3], T point_out[3]);
+template <typename T>
+inline void transformPoint_rm(const T translation[3], const T rotation[9], const T point_in[3], T point_out[3]){
+	point_out[0] = point_in[0] * rotation[0] + point_in[1] * rotation[1] + point_in[2] * rotation[2] + translation[0];
+	point_out[1] = point_in[0] * rotation[3] + point_in[1] * rotation[4] + point_in[2] * rotation[5] + translation[1];
+	point_out[2] = point_in[0] * rotation[6] + point_in[1] * rotation[7] + point_in[2] * rotation[8] + translation[2];
+}
 
 /*! \brief ceres compliant function to apply a rotation and translation to transform a point
  *@param rotation r, p, w
@@ -94,12 +106,8 @@ template <typename T>
 inline void transformPoint_euler(const T translation[3], const T rotation[3], const T point_in[3], T point_out[3]){
 	T R [9];
 	ceres::EulerAnglesToRotationMatrix(rotation, 3, R);
-	T aa [3];
-	ceres::RotationMatrixToAngleAxis(R, aa);
-	ceres::AngleAxisRotatePoint(aa, point_in, point_out);
-	point_out[0] = point_out[0] + translation[0];
-	point_out[1] = point_out[1] + translation[1];
-	point_out[2] = point_out[2] + translation[2];
+	
+	transformPoint_rm(translation, R, point_in, point_out);
 }
 
 /*! \brief ceres compliant function to apply a rotation and translation to transform a point
@@ -133,15 +141,6 @@ inline void transformPoint_aa(const T translation[3], const T rotation[3], const
 	std::cout << "\t" << point_out[0] << "\n";
 	std::cout << "\t" << point_out[1] << "\n";
 	std::cout << "\t" << point_out[2] << "\n\n";
-}
-
-template <typename T>
-inline void transformPoint_rm(const T translation[3], const T rotation[9], const T point_in[3], T point_out[3]);
-template <typename T>
-inline void transformPoint_rm(const T translation[3], const T rotation[9], const T point_in[3], T point_out[3]){
-	point_out[0] = point_in[0] * rotation[0] + point_in[1] * rotation[1] + point_in[2] * rotation[2] + translation[0];
-	point_out[1] = point_in[0] * rotation[3] + point_in[1] * rotation[4] + point_in[2] * rotation[5] + translation[1];
-	point_out[2] = point_in[0] * rotation[6] + point_in[1] * rotation[7] + point_in[2] * rotation[8] + translation[2];
 }
 
 /*! \brief ceres compliant function to compute the residual from a distorted pinhole camera model
@@ -500,7 +499,7 @@ int main(int argc, char** argv) {
 
 	std::printf("FLANGE_to_HEAD:\n");
 	std::printf("\tx = %f\ty = %f\tz = %f\n", FLANGE_to_HEAD_t[0], FLANGE_to_HEAD_t[1], FLANGE_to_HEAD_t[2]);
-	std::printf("\tr = %f\tp = %f\tw = %f\n", FLANGE_to_HEAD_r[0], FLANGE_to_HEAD_r[1], FLANGE_to_HEAD_r[2]);
+	std::printf("\tr = %f\tp = %f\tw = %f\n", dtor(FLANGE_to_HEAD_r[0]), dtor(FLANGE_to_HEAD_r[1]), dtor(FLANGE_to_HEAD_r[2]));
 
 	return 0;
 }
