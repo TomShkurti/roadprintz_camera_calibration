@@ -68,8 +68,8 @@ istream& operator>>(istream& ins, data_t& data) {
 //return of "true" means all is well
 bool read_calibration_file(
 	std::string fname,
-	std::vector<Eigen::Affine3d> &BASE_to_FLANGE_S_vec,
-	std::vector<Eigen::Affine3d> &FLANGE_V_to_BASE_vec,
+	std::vector<Eigen::Affine3d> &BASE_to_FLANGE_vec,
+	std::vector<Eigen::Affine3d> &FOREARM_to_BASE_vec,
 	std::vector<Eigen::Vector2d> &image_pixel_vec
 ) {
 	
@@ -119,13 +119,13 @@ bool read_calibration_file(
 
 	
 	//the following args are passed in. Make sure they are empty
-	BASE_to_FLANGE_S_vec.clear();
-	FLANGE_V_to_BASE_vec.clear();
+	BASE_to_FLANGE_vec.clear();
+	FOREARM_to_BASE_vec.clear();
 	image_pixel_vec.clear();
 	
         Eigen::Vector2d xy_pixels;
-        Eigen::Affine3d BASE_to_FLANGE_S;
-	Eigen::Affine3d FLANGE_V_to_BASE;
+        Eigen::Affine3d BASE_to_FLANGE;
+	Eigen::Affine3d FOREARM_to_BASE;
 	
 	int nlines = data.size();
 	for (int n = 0; n < nlines; n++) {
@@ -136,21 +136,21 @@ bool read_calibration_file(
 			data[n][ 8], data[n][ 9], data[n][10], data[n][11],
 			data[n][12], data[n][13], data[n][14], data[n][15]
 		;
-		BASE_to_FLANGE_S = m;
+		BASE_to_FLANGE = m.transpose();
 		m <<
 			data[n][16], data[n][17], data[n][18], data[n][19],
 			data[n][20], data[n][21], data[n][22], data[n][23],
 			data[n][24], data[n][25], data[n][26], data[n][27],
 			data[n][28], data[n][29], data[n][30], data[n][31]
 		;
-		FLANGE_V_to_BASE = m;
+		FOREARM_to_BASE = m.transpose();
 		
 		xy_pixels(0) = data[n][32];
 		xy_pixels(1) = data[n][33];
         
 		image_pixel_vec.push_back(xy_pixels);
-		BASE_to_FLANGE_S_vec.push_back(BASE_to_FLANGE_S);
-		FLANGE_V_to_BASE_vec.push_back(FLANGE_V_to_BASE);
+		BASE_to_FLANGE_vec.push_back(BASE_to_FLANGE);
+		FOREARM_to_BASE_vec.push_back(FOREARM_to_BASE);
 	}
 	return true;
 }
