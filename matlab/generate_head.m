@@ -31,7 +31,13 @@ data_lines = nan(size(BASE_to_FLANGE_all, 1), 34);
 i = 1;
 for s = 1 : size(BASE_to_FLANGE_all, 1)
 	BASE_to_FLANGE = squeeze(BASE_to_FLANGE_all(s, :, :));
+	
 	BASE_to_POINT = BASE_to_FLANGE * gt_FLANGE_to_HEAD * HEAD_to_POINT;
+	
+	if(i == 1)
+		BASE_to_FLANGE
+		BASE_to_POINT
+	end
 	
 	data_lines(i, :) = [
 		reshape(BASE_to_FLANGE, 1, []) reshape(BASE_to_POINT, 1, []) 0 0

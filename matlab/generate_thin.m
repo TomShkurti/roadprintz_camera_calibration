@@ -64,7 +64,6 @@ i = 1;
 for s = 1 : size(BASE_to_FLANGE_all, 1)
 	BASE_to_FLANGE = squeeze(BASE_to_FLANGE_all(s, :, :));
 	BASE_to_POINT = BASE_to_FLANGE * gt_FLANGE_to_HEAD * HEAD_to_POINT;
-	%BASE_to_POINT = BASE_to_FLANGE * HEAD_to_POINT;
 	
 	btps(s, 1) = BASE_to_POINT(1, 4);
 	btps(s, 2) = BASE_to_POINT(2, 4);
@@ -72,8 +71,7 @@ for s = 1 : size(BASE_to_FLANGE_all, 1)
 	
 	for v = 1 : size(FOREARM_to_BASE_all, 1)
 		FOREARM_to_BASE = squeeze(FOREARM_to_BASE_all(v, :, :));
-		%CAM_to_POINT = gt_CAM_to_FOREARM * FOREARM_to_BASE * BASE_to_POINT;
-		CAM_to_POINT = BASE_to_POINT;
+		CAM_to_POINT = gt_CAM_to_FOREARM * FOREARM_to_BASE * BASE_to_POINT;
 		
 		point = [CAM_to_POINT(1, 4); CAM_to_POINT(2, 4); CAM_to_POINT(3, 4); 1];
 		projected_point = gt_proj * point;
@@ -81,10 +79,10 @@ for s = 1 : size(BASE_to_FLANGE_all, 1)
 		data_lines(i, :) = [
 			reshape(BASE_to_FLANGE, 1, []) reshape(FOREARM_to_BASE, 1, []) 0 0
 		];
-		%data_lines(i, 33) = projected_point(1) / projected_point(3);
-		%data_lines(i, 34) = projected_point(2) / projected_point(3);
-		data_lines(i, 33) = point(1);
-		data_lines(i, 34) = point(2);
+		data_lines(i, 33) = projected_point(1) / projected_point(3);
+		data_lines(i, 34) = projected_point(2) / projected_point(3);
+		%data_lines(i, 33) = point(1);
+		%data_lines(i, 34) = point(2);
 		
 		btfs(i, 1) = FOREARM_to_BASE(1, 4);
 		btfs(i, 2) = FOREARM_to_BASE(2, 4);
@@ -104,4 +102,4 @@ hold off;
 figure();
 scatter(data_lines(:, 33), data_lines(:, 34));
 
-csvwrite('synthetic_data_all_ident_btof_only_noproj.csv', data_lines);
+csvwrite('synthetic_data.csv', data_lines);
