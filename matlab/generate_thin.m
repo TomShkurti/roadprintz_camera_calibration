@@ -88,11 +88,16 @@ for s = 1 : size(BASE_to_FLANGE_all, 1)
 		btfs(i, 2) = FOREARM_to_BASE(2, 4);
 		btfs(i, 3) = FOREARM_to_BASE(3, 4);
 		
+		if(i == 1)
+			BASE_to_FLANGE
+			FOREARM_to_BASE
+			BASE_to_POINT
+			CAM_to_POINT
+		end
+		
 		i = i + 1;
 	end
 end
-
-squeeze(BASE_to_FLANGE_all(1, :, :))
 
 scatter3(btps(:, 1), btps(:, 2), btps(:, 3));
 hold on;
