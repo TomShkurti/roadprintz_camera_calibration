@@ -55,6 +55,13 @@ cs_add_executable(extrinsic src/wsn_cam_calib_ceres_EXTRINSIC.cpp)
 cs_add_executable(camera src/wsn_cam_calib_ceres_CAMERA.cpp)
 cs_add_executable(head src/wsn_cam_calib_ceres_HEAD.cpp)
 
+cs_add_executable(detector_hough src/detector_hough.cpp)
+cs_add_executable(detector_corners src/detector_corners.cpp)
+cs_add_executable(detector_integral src/detector_integral.cpp)
+
+cs_add_executable(intrinsic src/INTRINSIC_CAL.cpp)
+cs_add_executable(intrinsic_detect src/INTRINSIC_DETECT.cpp)
+
 #cs_add_executable(harris_corners src/harris_corners.cpp)
 #the following is required, if desire to link a node in this package with a library created in this same package
 # edit the arguments to reference the named node and named library within this package
@@ -72,6 +79,14 @@ target_link_libraries(extrinsic ${OpenCV_LIBS} ${CERES_LIBRARIES})
 target_link_libraries(camera ${OpenCV_LIBS} ${CERES_LIBRARIES})
 target_link_libraries(head ${OpenCV_LIBS} ${CERES_LIBRARIES})
 target_link_libraries(optimize_randnoise ${OpenCV_LIBS} ${CERES_LIBRARIES})
+
+target_link_libraries( detector_hough ${OpenCV_LIBS})
+target_link_libraries( detector_corners ${OpenCV_LIBS})
+target_link_libraries( detector_integral ${OpenCV_LIBS})
+
+
+target_link_libraries(intrinsic ${OpenCV_LIBS} ${CERES_LIBRARIES})
+target_link_libraries(intrinsic_detect circle_detector ${OpenCV_LIBS} ${CERES_LIBRARIES})
 
 cs_install()
 cs_export()

@@ -42,6 +42,7 @@
   <buildtool_depend>catkin_simple</buildtool_depend>
   <build_depend>roscpp</build_depend>
 <build_depend>image_transport</build_depend>
+<build_depend>template_matching_py</build_depend>
 <build_depend>cv_bridge</build_depend>
 <build_depend>sensor_msgs</build_depend>
 <build_depend>std_srvs</build_depend>
@@ -50,6 +51,7 @@
 <run_depend>cv_bridge</run_depend>
 <run_depend>sensor_msgs</run_depend>
 <run_depend>std_srvs</run_depend>
+<run_depend>template_matching_py</run_depend>
   <!-- The export tag contains other, unspecified, tags -->
   <export>
     <!-- You can specify that this package is a metapackage here: -->
