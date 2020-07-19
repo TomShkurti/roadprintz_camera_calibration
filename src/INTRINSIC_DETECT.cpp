@@ -342,7 +342,7 @@ int main(int argc, char** argv) {
 	std::string intermediate_folder = data_path + "/intermediate";
 	//Start up the file where outputs will go.
 	std::ofstream calib_output_file;
-	calib_output_file.open(intermediate_folder + "/intrinsic_calibration_points.txt");
+	calib_output_file.open(intermediate_folder + "/intrinsic_calibration_points.csv");
 	
 	std::vector<cv::Mat> vec_of_images;
 	std::vector<std::string> vec_of_image_names;
@@ -443,7 +443,7 @@ int main(int argc, char** argv) {
 		//TODO Looks like a bunch of different tweaks to the same circle-finder.
 		/**/
 		//bool patternfound = findCirclesGrid(grayscaleImage, patternsize, centers, CALIB_CB_CLUSTERING);//CALIB_CB_CLUSTERING
-		bool patternfound = findCirclesGrid(binarizedImage, patternsize, centers, cv::CALIB_CB_SYMMETRIC_GRID);//CALIB_CB_CLUSTERING
+		//bool patternfound = findCirclesGrid(binarizedImage, patternsize, centers, cv::CALIB_CB_SYMMETRIC_GRID);//CALIB_CB_CLUSTERING
 		//bool patternfound = findCirclesGrid(grayscaleImage, patternsize, centers, CALIB_CB_SYMMETRIC_GRID);//CALIB_CB_CLUSTERING
 		//bool patternfound = findCirclesGrid(binarizedImage, patternsize, centers, cv::CALIB_CB_ASYMMETRIC_GRID);//CALIB_CB_CLUSTERING
 		//bool patternfound = findCirclesGrid(grayscaleImage, patternsize, centers, CALIB_CB_SYMMETRIC_GRID,blobDetector);//CALIB_CB_CLUSTERING
@@ -459,7 +459,7 @@ int main(int argc, char** argv) {
 		//circleDetectorImpl.findCircles(grayscaleImage,binarizedImage,vec_of_Centers );
 		//circleDetectorImpl.findCircles(grayscaleImage,binarizedImage,vec_of_Centers );
 
-		//bool patternfound = findCirclesGrid(grayscaleImage, patternsize, centers, 1, circle_detector_ptr_);//CALIB_CB_CLUSTERING
+		bool patternfound = findCirclesGrid(grayscaleImage, patternsize, centers, 1, circle_detector_ptr_);//CALIB_CB_CLUSTERING
 		double dx_mill,dy_mill,dz_mill;
  
 		if (patternfound) {
@@ -474,13 +474,17 @@ int main(int argc, char** argv) {
 					center = centers[n_circle];
 					cv::circle( image, center, 2, cv::Scalar(0,0,255), 2 );
 					calib_output_file <<
+						"1,0,0,0,0,1,0,0,0,0,1,0," <<
+						dx_mill << ", " << dy_mill <<
+						", " << dz_mill << ", 1,\t" <<
+						
+						"1,0,0,0,0,1,0,0,0,0,1,0," <<//TODO Make doubly sure the target scaling is fixed!!!
+						j_circle*CIRCLE_SPACING * 0.98 << ", " <<
+						i_circle*CIRCLE_SPACING * 0.98<< ", " <<
+						"0.01, 1,\t" << 
+						
 						center.x << ", " <<
-						center.y << ", " <<
-						j_circle*CIRCLE_SPACING << ", " <<
-						i_circle*CIRCLE_SPACING << ", " <<
-						dx_mill << ", " << 
-						dy_mill << ", " <<
-						dz_mill << "\n"
+						center.y << "\n";
 					;
 				}
 			}
@@ -490,7 +494,7 @@ int main(int argc, char** argv) {
 			failures++;
 		}
 		cv::imshow("Src image", image);
-		cv::waitKey(100);
+		cv::waitKey(1000);
 	}
 	calib_output_file.close();
 	return 0;
