@@ -391,7 +391,7 @@ int main(int argc, char** argv) {
 	//TODO Parametrize dis
 	
 	std::string data_path = ros::package::getPath("roadprintz_camera_calibration");
-	std::string fname(data_path + "/matlab/idata_1-1-50-01-01.csv");
+	std::string fname(data_path + "/intermediate/intrinsic_calibration_points.csv");
 	if (!read_calibration_file(fname, BASE_to_TIP_vec, TARGET_to_POINT_vec, image_pixel_vec)) {
 		cout<<"could not open file "<<fname<<"; quitting"<<endl;
 		return 1;
@@ -421,8 +421,8 @@ int main(int argc, char** argv) {
 	double CAM_to_BASE_t [3];
 	double CAM_to_BASE_r [3];
 	double projection_matrix[12] = {
-		434.8289178042981,	0.0,			500.5,	0.0,
-		0.0,			434.8289178042981,	330.5,	0.0,
+		434.8289178042981,	0.0,			1152.0,	0.0,
+		0.0,			434.8289178042981,	648.0,	0.0,
 		0.0,			0.0,			1.0,	0.0
 	};
 	double projection[4] = {
@@ -433,18 +433,18 @@ int main(int argc, char** argv) {
 	//Initialize the unknowns
 	//TODO Find a way to inform this parametrically
 	//TODO For simulation tests, get these ground truths from the simulation
-	TIP_to_TARGET_t[0] = 0.01;
-	TIP_to_TARGET_t[1] = 0.01;
-	TIP_to_TARGET_t[2] = 0.01;
-	TIP_to_TARGET_r[0] = 0.1;
-	TIP_to_TARGET_r[1] = 0.1;
-	TIP_to_TARGET_r[2] = 0.1;
-	CAM_to_BASE_t[0] = -0.2;
-	CAM_to_BASE_t[1] = -0.25;
-	CAM_to_BASE_t[2] = 0.4;
-	CAM_to_BASE_r[0] = 0.1;
-	CAM_to_BASE_r[1] = 0.1;
-	CAM_to_BASE_r[2] = 0.1;
+	TIP_to_TARGET_t[0] = 0.0;
+	TIP_to_TARGET_t[1] = 0.0;
+	TIP_to_TARGET_t[2] = 0.0;
+	TIP_to_TARGET_r[0] = 0.;
+	TIP_to_TARGET_r[1] = 0.;
+	TIP_to_TARGET_r[2] = 0.;
+	CAM_to_BASE_t[0] = -0.3;
+	CAM_to_BASE_t[1] = -0.15;
+	CAM_to_BASE_t[2] = 0.3;
+	CAM_to_BASE_r[0] = 0.;
+	CAM_to_BASE_r[1] = 0.;
+	CAM_to_BASE_r[2] = 0.;
 	
 	for (int i=0; i<nlines; i++) {//For each data entry...
 		double pixvec[2] = {image_pixel_vec[i][0], image_pixel_vec[i][1]};
