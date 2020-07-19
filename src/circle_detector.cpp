@@ -116,25 +116,25 @@ namespace cv {
         maxThreshold = 220;
         minRepeatability = 2;
         minDistBetweenCircles = 10;
-        minRadiusDiff = 10; //50; //10;
+        minRadiusDiff = 200; //50; //10;
 
-        filterByColor = true;
+        filterByColor = false;
         circleColor = 0;
 
         filterByArea = true;
-        minArea = 100; //25;
-        maxArea = 4000; //10000; //5000;
+        minArea = 25; //25;
+        maxArea = 10000; //10000; //5000;
 
         filterByCircularity = true; //false;
         minCircularity = 0.8f;
         maxCircularity = std::numeric_limits<float>::max();
 
-        filterByInertia = true;
-        minInertiaRatio = 0.3f; //0.1f;
+        filterByInertia = false;
+        minInertiaRatio = 0.1f; //0.1f;
         maxInertiaRatio = std::numeric_limits<float>::max();
 
         filterByConvexity = true;
-        minConvexity = 0.95f;
+        minConvexity = 0.5f;
         maxConvexity = std::numeric_limits<float>::max();
     }
 
@@ -229,7 +229,7 @@ namespace cv {
     bool fits_in_cluster(Point2d cluster_center, Point2d test_pt) {
         double dist = norm(cluster_center - test_pt);
         if (dist < CLUSTER_ACCEPTANCE_RADIUS) {
-            printf("test pt is %f from cluster center", dist);
+            //printf("test pt is %f from cluster center", dist);
             return true;
         } else
             return false;
@@ -237,9 +237,9 @@ namespace cv {
 
     void CircleDetectorImpl::findCircles(InputArray _image, InputArray _binaryImage, std::vector<Center>& centers) const {
         //  CV_INSTRUMENT_REGION()
-        printf("************* findCircles ******************\n");
+        //printf("************* findCircles ******************\n");
         num_findCircles_calls++;
-        printf("call number %d",num_findCircles_calls);
+        //printf("call number %d",num_findCircles_calls);
         Mat image = _image.getMat(); // Oh so much  cleaner this way :(
         Mat binaryImage = _binaryImage.getMat();
         Mat keypointsImage = image;
@@ -255,7 +255,7 @@ namespace cv {
         //     for( size_t k = 0; k < contours0.size(); k++ ) 
         //      approxPolyDP(Mat(contours0[k]), contours[k], eps, true);
 
-        printf("found %d contours\n", n_contours);
+        //printf("found %d contours\n", n_contours);
         // loop on all contours
         int n_survivors = 0;
         for (size_t contourIdx = 0; contourIdx < contours.size(); contourIdx++) {
@@ -273,7 +273,7 @@ namespace cv {
                 //}
                 //else {printf("area= %f\n",circleArea); }
                 if (circleArea > 2000) {
-                    cout << "large circle, contour:  " << contourIdx << endl;
+                    //cout << "large circle, contour:  " << contourIdx << endl;
                 }
                 if (area < params.minArea || area >= params.maxArea) continue;
 
@@ -317,9 +317,9 @@ namespace cv {
                     inertiaRatio = ratio;
                 }
                 if (ratio < params.minInertiaRatio || ratio >= params.maxInertiaRatio) {
-                    printf("rejected for inertia ratio %f\n", inertiaRatio);
+                    //printf("rejected for inertia ratio %f\n", inertiaRatio);
                     if (circleArea > 2000) {
-                        cout << "large circle being rejected; enter 1: ";
+                        //cout << "large circle being rejected; enter 1: ";
                         //cin>>g_ans;
                     }
                 }
@@ -356,9 +356,9 @@ namespace cv {
             Mat(contours[contourIdx]).convertTo(pointsf, CV_32F);
             n_points = pointsf.rows;
             if (pointsf.rows < 5) {
-                printf("rejected for too few points; pointsf.rows = %d\n", n_points);
+                //printf("rejected for too few points; pointsf.rows = %d\n", n_points);
                 if (circleArea > 2000) {
-                    cout << "large circle being rejected; enter 1: ";
+                    //cout << "large circle being rejected; enter 1: ";
                     //cin>>g_ans;
                 }
             }
@@ -372,16 +372,16 @@ namespace cv {
             center.location = box.center;
 
             if (circleArea > 2000) {
-                cout << "large circle, contour:  " << contourIdx << endl;
-                printf("center: %f, %f\n", center.location.x, center.location.y);
+                //cout << "large circle, contour:  " << contourIdx << endl;
+                //printf("center: %f, %f\n", center.location.x, center.location.y);
             }
 
             if (params.filterByCircularity) {
 
                 if (circularityRatio < params.minCircularity || circularityRatio >= params.maxCircularity) {
-                    printf("rejected for circularity at ratio = %f\n", circularityRatio);
+                    //printf("rejected for circularity at ratio = %f\n", circularityRatio);
                     if (circleArea > 2000) {
-                        cout << "large circle being rejected; enter 1: ";
+                        //cout << "large circle being rejected; enter 1: ";
                         //cin>>g_ans;
                     }
                 }
@@ -392,9 +392,9 @@ namespace cv {
             if (params.filterByConvexity) {
 
                 if (convexityRatio < params.minConvexity || convexityRatio >= params.maxConvexity) {
-                    printf("rejected for convexity, ratio = %f \n", convexityRatio);
+                    //printf("rejected for convexity, ratio = %f \n", convexityRatio);
                     if (circleArea > 2000) {
-                        cout << "large circle being rejected; enter 1: ";
+                        //cout << "large circle being rejected; enter 1: ";
                         //cin>>g_ans;
                     }
                 }
@@ -405,9 +405,9 @@ namespace cv {
             if (params.filterByColor) {
                 circleColor = binaryImage.at<uchar>(cvRound(center.location.y), cvRound(center.location.x));
                 if (binaryImage.at<uchar>(cvRound(center.location.y), cvRound(center.location.x)) != params.circleColor) {
-                    printf("rejected for color %d \n", circleColor);
+                    //printf("rejected for color %d \n", circleColor);
                     if (circleArea > 2000) {
-                        cout << "large circle being rejected; enter 1: ";
+                        //cout << "large circle being rejected; enter 1: ";
                         //cin>>g_ans;
                     }
                 }
@@ -426,14 +426,14 @@ namespace cv {
             //	center.radius = (dists[(dists.size() - 1) / 2] + dists[dists.size() / 2]) / 2.;
             //}
             center.radius = (box.size.height + box.size.width) / 4.0;
-            printf("radius = %f\n", center.radius);
+            //printf("radius = %f\n", center.radius);
             centers.push_back(center);
             n_survivors++;
             //#ifdef DEBUG_CIRCLE_DETECTOR
             //OOPS!!  drawing circles seems to affect the grid finder!
             //maybe keypointsImage points to the image being analyzed??
             //circle(keypointsImage, center.location, 5, Scalar(255, 255, 255), 5);
-            cout << "number of surviving contours = " << n_survivors << endl;
+            /*cout << "number of surviving contours = " << n_survivors << endl;
             printf("imshow and waitKey...\n");
             printf("**** ACCEPTED CONTOUR****  %d centers\n",(int) centers.size());
             printf("center: %f, %f\n", center.location.x, center.location.y);
@@ -443,22 +443,22 @@ namespace cv {
             printf("convexity ratio = %f \n", convexityRatio);
             printf("num points = %d\n", n_points);
             printf(" color %d \n", circleColor);
-            printf("radius = %f\n", center.radius);
+            printf("radius = %f\n", center.radius);*/
             if (circleArea > 2000) {
-                cout << "large circle accepted; enter 1: ";
+                //cout << "large circle accepted; enter 1: ";
                 //cin>>g_ans;
             }
 
-            imshow("bk", keypointsImage);
-            waitKey(100);
+            //imshow("bk", keypointsImage);
+            //waitKey(100);
             //cout<<"enter 1: ";
             //cin>>g_ans;
             //#endif
         }
         //#ifdef DEBUG_CIRCLE_DETECTOR
-        printf("imshow and waitKey...\n");
-        imshow("bk", keypointsImage);
-        waitKey(10);
+        //printf("imshow and waitKey...\n");
+       // imshow("bk", keypointsImage);
+        //waitKey(10);
         //wsn: consolidate the surviving centers here...
         //this did not work, since this function seems to get called oddly by pattern finder
         /*
@@ -588,14 +588,14 @@ namespace cv {
         }
 
 #ifdef DEBUG_CIRCLE_DETECTOR
-        namedWindow("keypoints", CV_WINDOW_NORMAL);
+        //namedWindow("keypoints", CV_WINDOW_NORMAL);
         Mat outImg = image.clone();
         for (size_t i = 0; i < keypoints.size(); i++) {
             circle(outImg, keypoints[i].pt, keypoints[i].size, Scalar(255, 0, 255), -1);
         }
         // drawKeypoints(image, keypoints, outImg);
-        imshow("keypoints", outImg);
-        waitKey();
+        //imshow("keypoints", outImg);
+        //waitKey();
 #endif
     }
 
