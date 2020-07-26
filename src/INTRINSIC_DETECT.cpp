@@ -318,7 +318,9 @@ void get_dxdydz_from_image_name(
 	s_index = image_name_last.substr(10,1);
 	int z_index = stoi(s_index);
 	
+	//AXIS ASSIGNMENTS
 	//convert indices into translations:
+	//TODO Currently this information is informed by the tests run in matlab/data_plotter.m. It is roundabout and requires a lot of manual tweaking to use.
 	dx_mill = -x_index*MILL_INCREMENT;
 	dy_mill = -z_index*MILL_INCREMENT; //mill z-axis is antiparallel to target y-axis
 	dz_mill = y_index*MILL_INCREMENT; //mill y-axis is in direction of camera/target z-axis
@@ -473,6 +475,7 @@ int main(int argc, char** argv) {
 					int n_circle = j_circle + i_circle*N_CIRCLE_COLS;
 					center = centers[n_circle];
 					cv::circle( image, center, 2, cv::Scalar(0,0,255), 2 );
+					//WRITE TO OUTPUT
 					calib_output_file <<
 						"1,0,0,0,0,1,0,0,0,0,1,0," <<
 						dx_mill << ", " << dy_mill <<
@@ -480,8 +483,8 @@ int main(int argc, char** argv) {
 						
 						"1,0,0,0,0,1,0,0,0,0,1,0," <<//TODO Make doubly sure the target scaling is fixed!!!
 						j_circle*CIRCLE_SPACING * 0.98 << ", " <<
-						i_circle*CIRCLE_SPACING * 0.98<< ", " <<
-						"0.01, 1,\t" << 
+						i_circle*CIRCLE_SPACING * 0.98 << ", " <<
+						"0.0, 1,\t" << 
 						
 						center.x << ", " <<
 						center.y << "\n";
@@ -494,6 +497,7 @@ int main(int argc, char** argv) {
 			failures++;
 		}
 		cv::imshow("Src image", image);
+		///imwrite(data_path + "red_cirlces.png", image);
 		cv::waitKey(1000);
 	}
 	calib_output_file.close();
