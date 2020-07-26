@@ -60,6 +60,7 @@ cs_add_executable(detector_corners src/detector_corners.cpp)
 cs_add_executable(detector_integral src/detector_integral.cpp)
 
 cs_add_executable(intrinsic src/INTRINSIC_CAL.cpp)
+cs_add_executable(intrinsic_nodist src/INTRINSIC_CAL_FIXEDDIST.cpp)
 cs_add_executable(intrinsic_detect src/INTRINSIC_DETECT.cpp)
 
 #cs_add_executable(harris_corners src/harris_corners.cpp)
@@ -86,6 +87,7 @@ target_link_libraries( detector_integral ${OpenCV_LIBS})
 
 
 target_link_libraries(intrinsic ${OpenCV_LIBS} ${CERES_LIBRARIES})
+target_link_libraries(intrinsic_nodist ${OpenCV_LIBS} ${CERES_LIBRARIES})
 target_link_libraries(intrinsic_detect circle_detector ${OpenCV_LIBS} ${CERES_LIBRARIES})
 
 cs_install()

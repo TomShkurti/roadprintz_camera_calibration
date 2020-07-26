@@ -33,9 +33,11 @@
 // Minimize 0.5 (10 - x)^2 using jacobian matrix computed using
 // automatic differentiation.
 
-#include <string.h>
+#include <string>
 
 #include "ceres/ceres.h"
+#include "ceres/iteration_callback.h"
+//#include "ceres/types.h"
 #include "ceres/rotation.h"
 #include "glog/logging.h"
 //#include <ceres/rotation.h>
@@ -47,6 +49,10 @@
 #include <Eigen/Geometry>
 
 #include <ros/package.h>
+
+#include <opencv2/highgui/highgui.hpp>
+//TODO Why are these deps listed twice?
+#include <opencv2/core.hpp>
 
 #include "INTRINSIC_READER.cpp"
 
@@ -84,6 +90,50 @@ T motion_axis_z[3];
 ceres::AngleAxisRotatePoint(rotation_axis, nominal_axis_x, motion_axis_x);
 ceres::AngleAxisRotatePoint(rotation_axis, nominal_axis_y, motion_axis_y);
 ceres::AngleAxisRotatePoint(rotation_axis, nominal_axis_z, motion_axis_z);*/
+
+//Debug elements to visualize action of the projector.
+cv::Mat * debug_mat;
+cv::Mat * the_ground_truth;
+class VisualCallback : public ceres::IterationCallback {
+public:
+	//TODO Are either of these necessary??
+	explicit VisualCallback(){}
+	~VisualCallback() {}
+
+	ceres::CallbackReturnType operator()(const ceres::IterationSummary& summary) {
+		cv::namedWindow("Iteration Projection", CV_GUI_EXPANDED | CV_WINDOW_NORMAL);
+		cv::imshow("Iteration Projection", *debug_mat);
+		cv::waitKey(1000);
+		//cv::imwrite("/home/tes77/dbg_img.png", *debug_mat);
+		//cv::waitKey();
+		
+		the_ground_truth->copyTo(*debug_mat);
+		return ceres::SOLVER_CONTINUE;
+	}
+};
+//Officially the stupidest thing, this profoundly hacky process is required to
+//get the core value out of a ceres::jet since it cannot be accessed
+//directly even in a read-only manner. WHY is this functionalty missing from a
+//flagship piece of software released by a major corporation for prestigious
+//institutions of learning to use?????????
+template<typename T>
+double val(const T& j){
+	std::ostringstream oss;
+	oss << j;
+	
+	//Sometimes a Jet has a big long blob of derivative data attached to it
+	//that we need to cut off, and a bracket at the beginning...
+	if(oss.str().find_first_of("[") != string::npos){
+		return std::stod(oss.str().substr(1, oss.str().find_first_of(";") - 1));
+	}
+	
+	//And SOMETIMES it's just a number.
+	else{
+		return std::stod(oss.str());
+	}
+	
+	//I have NO idea why.
+}
 
 inline double dtor(double d){
 	return (d * 3.14159) / 180.0;
@@ -191,8 +241,13 @@ inline void cameraPntResidualDist(
 	const T& ox, const T& oy,
 	T* residual
 ){
-	//std::cout<< "Goal u " << ox << "\n";
-	//std::cout<< "Goal v " << oy << "\n";
+	/*std::cout<< "Goal u " << ox << "\n";
+	std::cout<< "Goal v " << oy << "\n\n";
+	
+	std::cout<< "fx " << fx << "\n";
+	std::cout<< "fy " << fy << "\n";
+	std::cout<< "cx " << cx << "\n";
+	std::cout<< "cy " << cy << "\n";*/
 	
 	//Projection
 	T xp1 = point_x;
@@ -208,10 +263,13 @@ inline void cameraPntResidualDist(
 	up = cx * zp1 + fx * xp1;
 	vp = cy * zp1 + fy * yp1;
 
-	if(zp1 != T(0)){
+	if(zp1 != T(0)){//If the distance to the image plane is zero something is VERY wrong.
 		up = up / zp1;
 		vp = vp / zp1;
 	}
+	
+	//std::cout<< "u pre-distort " << up << "\n";
+	//std::cout<< "v pre-distort " << vp << "\n";
 	
 	//residual[0] = up - ox;
 	//residual[1] = vp - oy;
@@ -234,8 +292,25 @@ inline void cameraPntResidualDist(
 	T U_distort = ((U_radial + U_tangential) * cx * T(2.0)) + cx;
 	T V_distort = ((V_radial + V_tangential) * cy * T(2.0)) + cy;
 
-	residual[0] = U_distort - ox;
-	residual[1] = V_distort - oy;
+	residual[0] = pow(U_distort - ox, 2);
+	residual[1] = pow(V_distort - oy, 2);
+	
+	//TODO This boundary checking needs to be improved, are there rare
+	//edge cases where it can pass out of the range of the cv::Mat?
+	if(!(U_distort < T(0.0) || U_distort > T(2303.0) || V_distort < T(0.0) || V_distort > T(1295.0))){
+		debug_mat->at<cv::Vec3b>((int)std::rint(val(V_distort)) - 1, (int)std::rint(val(U_distort)) - 1)[1] = 255;
+		debug_mat->at<cv::Vec3b>((int)std::rint(val(V_distort)) + 1, (int)std::rint(val(U_distort)) - 1)[1] = 255;
+		debug_mat->at<cv::Vec3b>((int)std::rint(val(V_distort)) - 1, (int)std::rint(val(U_distort)) + 1)[1] = 255;
+		debug_mat->at<cv::Vec3b>((int)std::rint(val(V_distort)) + 1, (int)std::rint(val(U_distort)) + 1)[1] = 255;
+		debug_mat->at<cv::Vec3b>((int)std::rint(val(V_distort)), (int)std::rint(val(U_distort)))[1] = 255;
+	}
+	/*if(V_distort < T(100.0) && U_distort < T(100.0)){
+		printf("STRAY PIXEL DETECTED\n");
+	}*/
+	
+	//if(U_distort < T(0.0) || U_distort > cx * T(2.0) || V_distort < T(0.0) || V_distort > cy * T(2.0)){
+	//	printf("Insane projection value\n");
+	//}
 	
 	//std::cout << up << "\n";
 	//std::cout << vp << "\n";
@@ -253,9 +328,10 @@ public:
 		const T* CAM_to_BASE_translation, const T* CAM_to_BASE_rotation,
 		const T* projection, const T* distortion,
 	T* residual) const {
+		//fx	fy			cx			cy
 		T fx = projection[0];
-		T cx = projection[1];
-		T fy = projection[2];
+		T cx = projection[2];
+		T fy = projection[1];
 		T cy = projection[3];
 
 		//1: Transform target points into camera frame
@@ -273,8 +349,11 @@ public:
 		std::cout << TARGET_to_POINT[2] << "\n\n";*/
 	
 		//	1b: TIP_to_TARGET * TARGET_to_POINT
-		
 		T TIP_to_POINT [3];
+		T ttt_null[3];
+		ttt_null[0] = T(0.0);
+		ttt_null[1] = T(0.0);
+		ttt_null[2] = T(0.0);
 		transformPoint_euler(TIP_to_TARGET_translation, TIP_to_TARGET_rotation, TARGET_to_POINT, TIP_to_POINT);
 		
 		/*std::cout << "TIP TO POINT\n";
@@ -323,8 +402,11 @@ public:
 		//TODO: Back-check if these are passing through the transform converter properly when not identity.
 		cameraPntResidualDist(
 			CAM_to_POINT[0], CAM_to_POINT[1], CAM_to_POINT[2],
-			fx, cx, fy, cy,
+			//fx, fy, T(1152.0), T(648.0),
+			fx, fy, cx, cy,
+			//T(1600), T(1600), T(1152.0), T(648.0),
 			distortion[0], distortion[1], distortion[2], distortion[3], distortion[4],
+			//T(0.0), T(0.0), T(0.0), T(0.0), T(0.0), 
 			ox, oy,
 			residual
 		);
@@ -380,6 +462,12 @@ public:
 };
 
 int main(int argc, char** argv) {
+
+	cv::Mat debug_mat_core = cv::Mat(1296, 2304, CV_8UC3);
+	debug_mat = &debug_mat_core;
+	cv::Mat ground_truth_core = cv::Mat(1296, 2304, CV_8UC3);
+	the_ground_truth = &ground_truth_core;
+
 	google::InitGoogleLogging(argv[0]);
 
 	// Storage for input values constant for each point.
@@ -421,35 +509,48 @@ int main(int argc, char** argv) {
 	double CAM_to_BASE_t [3];
 	double CAM_to_BASE_r [3];
 	double projection_matrix[12] = {
-		434.8289178042981,	0.0,			1152.0,	0.0,
-		0.0,			434.8289178042981,	648.0,	0.0,
-		0.0,			0.0,			1.0,	0.0
+		1600,	0.0,			1222,	0.0,
+		0.0,			1700,	648,	0.0,
+		0.0,			0.0,	1.0,	0.0
 	};
-	double projection[4] = {
-		projection_matrix[0], projection_matrix[2], projection_matrix[5], projection_matrix[6]
+	double projection[4] = {//fx	fy			cx			cy
+		projection_matrix[0], projection_matrix[5], projection_matrix[2], projection_matrix[6]
 	};
-	double distortion[5] = {0.0, 0.0, 0.0, 0.0, 0.0};
+	
+	//ExtrinsicCalEntry::cx = 1152.0;
+	//ExtrinsicCalEntry::cy = 648.0;
+	double distortion[5] = {-0.68, 1.21, -1.12, -0., 0.015};
 	
 	//Initialize the unknowns
 	//TODO Find a way to inform this parametrically
 	//TODO For simulation tests, get these ground truths from the simulation
-	TIP_to_TARGET_t[0] = 0.0;
-	TIP_to_TARGET_t[1] = 0.0;
-	TIP_to_TARGET_t[2] = 0.0;
+	//Angle of > 50.0 breaks in sim; 40 does not.
+	TIP_to_TARGET_t[0] = -0.003674;
+	TIP_to_TARGET_t[1] = -0.052361;
+	TIP_to_TARGET_t[2] = -0.019039;
 	TIP_to_TARGET_r[0] = 0.;
-	TIP_to_TARGET_r[1] = 0.;
-	TIP_to_TARGET_r[2] = 0.;
-	CAM_to_BASE_t[0] = -0.3;
-	CAM_to_BASE_t[1] = -0.15;
-	CAM_to_BASE_t[2] = 0.3;
-	CAM_to_BASE_r[0] = 0.;
-	CAM_to_BASE_r[1] = 0.;
-	CAM_to_BASE_r[2] = 0.;
+	TIP_to_TARGET_r[1] = -0.01;
+	TIP_to_TARGET_r[2] = 0.02;
+	CAM_to_BASE_t[0] = 0.125125;
+	CAM_to_BASE_t[1] = -0.008809;
+	CAM_to_BASE_t[2] = 0.417428;
+	CAM_to_BASE_r[0] = -6.0;
+	CAM_to_BASE_r[1] = 0.36;
+	CAM_to_BASE_r[2] = 0.3;
 	
 	for (int i=0; i<nlines; i++) {//For each data entry...
-		double pixvec[2] = {image_pixel_vec[i][0], image_pixel_vec[i][1]};
-	
 		//Add the per-point constants
+		double pixvec[2] = {image_pixel_vec[i][0], image_pixel_vec[i][1]};
+		
+		ground_truth_core.at<uchar>(std::rint(image_pixel_vec[i][1]) - 1, std::rint(image_pixel_vec[i][0]) - 1, 0) = 255;
+		ground_truth_core.at<uchar>(std::rint(image_pixel_vec[i][1]) - 1, std::rint(image_pixel_vec[i][0]), 0) = 255;
+		ground_truth_core.at<uchar>(std::rint(image_pixel_vec[i][1]) - 1, std::rint(image_pixel_vec[i][0]) + 1, 0) = 255;
+		ground_truth_core.at<uchar>(std::rint(image_pixel_vec[i][1]), std::rint(image_pixel_vec[i][0]) - 1, 0) = 255;
+		ground_truth_core.at<uchar>(std::rint(image_pixel_vec[i][1]), std::rint(image_pixel_vec[i][0]) + 1, 0) = 255;
+		ground_truth_core.at<uchar>(std::rint(image_pixel_vec[i][1]) + 1, std::rint(image_pixel_vec[i][0]) - 1, 0) = 255;
+		ground_truth_core.at<uchar>(std::rint(image_pixel_vec[i][1]) + 1, std::rint(image_pixel_vec[i][0]), 0) = 255;
+		ground_truth_core.at<uchar>(std::rint(image_pixel_vec[i][1]) + 1, std::rint(image_pixel_vec[i][0]) + 1, 0) = 255;
+		
 		Eigen::Vector3d translation_t = TARGET_to_POINT_vec[i].translation();
 
 		//TODO- Target to point actually has no need for a rotation. Remove it.
@@ -492,22 +593,28 @@ int main(int argc, char** argv) {
 		);
 	}
 	
+	the_ground_truth->copyTo(*debug_mat);
+	
 	
 	//Bound the rotations.
-	problem.SetParameterLowerBound(TIP_to_TARGET_r, 0, -180.0);
-	problem.SetParameterUpperBound(TIP_to_TARGET_r, 0,  180.0);
-	problem.SetParameterLowerBound(TIP_to_TARGET_r, 1, -180.0);
-	problem.SetParameterUpperBound(TIP_to_TARGET_r, 1,  180.0);
-	problem.SetParameterLowerBound(TIP_to_TARGET_r, 2, -180.0);
-	problem.SetParameterUpperBound(TIP_to_TARGET_r, 2,  180.0);
+	problem.SetParameterLowerBound(TIP_to_TARGET_r, 0, -190.0);
+	problem.SetParameterUpperBound(TIP_to_TARGET_r, 0,  190.0);
+	problem.SetParameterLowerBound(TIP_to_TARGET_r, 1, -190.0);
+	problem.SetParameterUpperBound(TIP_to_TARGET_r, 1,  190.0);
+	problem.SetParameterLowerBound(TIP_to_TARGET_r, 2, -190.0);
+	problem.SetParameterUpperBound(TIP_to_TARGET_r, 2,  190.0);
 	
 	
-	problem.SetParameterLowerBound(CAM_to_BASE_r, 0, -180.0);
-	problem.SetParameterUpperBound(CAM_to_BASE_r, 0,  180.0);
-	problem.SetParameterLowerBound(CAM_to_BASE_r, 1, -180.0);
-	problem.SetParameterUpperBound(CAM_to_BASE_r, 1,  180.0);
-	problem.SetParameterLowerBound(CAM_to_BASE_r, 2, -180.0);
-	problem.SetParameterUpperBound(CAM_to_BASE_r, 2,  180.0);
+	problem.SetParameterLowerBound(CAM_to_BASE_r, 0, -190.0);
+	problem.SetParameterUpperBound(CAM_to_BASE_r, 0,  190.0);
+	problem.SetParameterLowerBound(CAM_to_BASE_r, 1, -190.0);
+	problem.SetParameterUpperBound(CAM_to_BASE_r, 1,  190.0);
+	problem.SetParameterLowerBound(CAM_to_BASE_r, 2, -190.0);
+	problem.SetParameterUpperBound(CAM_to_BASE_r, 2,  190.0);
+	
+	//Don't go behind any of the targets.
+	//TODO is this needed?
+	//problem.SetParameterLowerBound(CAM_to_BASE_t, 2, 0.1);
 	
 	/*std::cout << "" << FOREARM_to_BASE_vec[0].matrix() << "\n\n";
 	std::cout << "" << FOREARM_to_BASE_vec[0].linear() << "\n\n";
@@ -526,12 +633,20 @@ int main(int argc, char** argv) {
 	Solver::Options options;
 
 	options.minimizer_progress_to_stdout = true;
-	options.max_num_iterations = 1000;
+	options.linear_solver_type = ceres::DENSE_QR;
+	options.preconditioner_type = ceres::CLUSTER_TRIDIAGONAL;
+	options.trust_region_strategy_type = ceres::DOGLEG;
+	options.dogleg_type = ceres::SUBSPACE_DOGLEG;
+	//options.use_inner_iterations = true;
+	options.max_num_iterations = 10000;
+	
+	options.callbacks.push_back(new VisualCallback());
+	options.update_state_every_iteration = true;
 
 	Solver::Summary summary;
 	Solve(options, &problem, &summary);
 
-	std::cout << summary.BriefReport() << "\n\n\n";
+	std::cout << summary.FullReport() << "\n\n\n";
 
 	std::printf("TIP_to_TARGET:\n");
 	std::printf("\tx = %f\ty = %f\tz = %f\n", TIP_to_TARGET_t[0], TIP_to_TARGET_t[1], TIP_to_TARGET_t[2]);
@@ -544,12 +659,15 @@ int main(int argc, char** argv) {
 	std::printf("INTRINSICS:\n");
 	std::printf(
 		"\tfx = %f\tfy = %f\t cx = %f\t cy = %f\n",
+		//fx		fy		cx		cy
 		projection[0], projection[1], projection[2], projection[3]
 	);
 	std::printf(
 		"\tk1 = %f\tk2 = %f\t k3 = %f\t p1 = %f\t p2 = %f\n",
 		distortion[0], distortion[1], distortion[2], distortion[3], distortion[4]
 	);
+	
+	cv::destroyAllWindows();
 
 	return 0;
 }
