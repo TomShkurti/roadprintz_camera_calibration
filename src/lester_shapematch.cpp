@@ -20,6 +20,61 @@ int main(int argc, char** argv) {
 	std::string data_path = ros::package::getPath("roadprintz_camera_calibration");
 	boost::filesystem::path image_folder_path = boost::filesystem::path(data_path + "/lester_base_calib_data/images/");
 	
+	//Grab the positions and store them for later use
+	std::vector<std::vector<double> > left_positions;
+	std::ifstream left_positions_in(data_path + "/lester_base_calib_data/arm_positions_left.csv");
+	if(!left_positions_in.is_open()){
+		printf(
+			"\e[31mCould not find \"%s\".\e[39m\n",
+			(data_path + "/lester_base_calib_data/arm_positions_left.csv").c_str()
+		);
+		return 0;
+	}
+	std::string l_tmp;
+	while(getline(left_positions_in, l_tmp)){
+		std::vector<double> la(16);
+		const char * l_tmp_c = l_tmp.c_str();
+		sscanf(
+			l_tmp_c,
+			"%lf, %lf, %lf, %lf, %lf, %lf, %lf, %lf, %lf, %lf, %lf, %lf, %lf, %lf, %lf, %lf, ",
+			&la[0],		&la[1],		&la[2],		&la[3],
+			&la[4],		&la[5],		&la[6],		&la[7],
+			&la[8],		&la[9],		&la[10],	&la[11],
+			&la[12],	&la[13],	&la[14],	&la[15]
+		);
+		left_positions.push_back(la);
+	}
+	left_positions_in.close();
+			
+	std::vector<std::vector<double> > right_positions;
+	std::ifstream right_positions_in(data_path + "/lester_base_calib_data/arm_positions_right.csv");
+	if(!right_positions_in.is_open()){
+		printf(
+			"\e[31mCould not find \"%s\".\e[39m\n",
+			(data_path + "/lester_base_calib_data/arm_positions_right.csv").c_str()
+		);
+		return 0;
+	}
+	std::string r_tmp;
+	while(getline(right_positions_in, r_tmp)){
+		std::vector<double> ra(16);
+		const char * r_tmp_c = r_tmp.c_str();
+		sscanf(
+			r_tmp_c,
+			"%lf, %lf, %lf, %lf, %lf, %lf, %lf, %lf, %lf, %lf, %lf, %lf, %lf, %lf, %lf, %lf, ",
+			&ra[0],		&ra[1],		&ra[2],		&ra[3],
+			&ra[4],		&ra[5],		&ra[6],		&ra[7],
+			&ra[8],		&ra[9],		&ra[10],	&ra[11],
+			&ra[12],	&ra[13],	&ra[14],	&ra[15]
+		);
+		right_positions.push_back(ra);
+	}
+	right_positions_in.close();
+	
+	std::ofstream output_file;
+	output_file.open(data_path + "/lester_base_calib_data/detections.csv");
+	
+	//ID images
 	for(boost::filesystem::directory_entry& x : boost::filesystem::directory_iterator(image_folder_path)){
 		cv::Mat img = cv::imread(x.path().native());
 		
@@ -331,7 +386,32 @@ int main(int argc, char** argv) {
 		printf("\tDetected point (%f, %f)\n", goal_point.x, goal_point.y);
 		
 		cv::destroyAllWindows();
+		
+		//Write our data.
+		std::string fname = x.path().filename().native();
+		std::string number_string = fname.substr(
+			fname.find_first_of("t") + 1,
+			fname.find_first_of(".") - fname.find_first_of("t") - 1
+		);
+		int index = std::stoi(number_string);
+		
+		std::vector<double> position_line;
+		if(x.path().filename().native().find("left") == std::string::npos){
+			//Right lookup
+			position_line = right_positions[index];
+			output_file << "0, ";
+		} else {
+			//Left lookup
+			position_line = left_positions[index];
+			output_file << "1, ";
+		}
+		for(int i = 0; i < 16; i++){
+			output_file << std::to_string(position_line[i]) << ", ";
+		}
+		output_file << std::to_string(goal_point.x) << ", ";
+		output_file << std::to_string(goal_point.y) << "\n";
 	}
+	output_file.close();
 	
 	return 0;
 }
