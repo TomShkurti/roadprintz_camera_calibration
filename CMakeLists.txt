@@ -93,7 +93,7 @@ target_link_libraries(intrinsic ${OpenCV_LIBS} ${CERES_LIBRARIES})
 target_link_libraries(intrinsic_detect circle_detector ${OpenCV_LIBS} ${CERES_LIBRARIES})
 
 
-target_link_libraries(lester_shapematch ${OpenCV_LIBS} ${CERES_LIBRARIES})
+target_link_libraries(lester_shapematch ${OpenCV_LIBS})
 target_link_libraries(extrinsic_cam ${OpenCV_LIBS} ${CERES_LIBRARIES})
 
 cs_install()
