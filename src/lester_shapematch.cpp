@@ -374,14 +374,18 @@ int main(int argc, char** argv) {
 		cv::Point2d goal_point = intersections[min_ind];
 		
 		cv::Mat final_show = img.clone();
-		final_show.at<cv::Vec3b>((int)std::rint(goal_point.y) - 1, (int)std::rint(goal_point.x) - 1)[2] = 255;
-		final_show.at<cv::Vec3b>((int)std::rint(goal_point.y) + 1, (int)std::rint(goal_point.x) - 1)[2] = 255;
-		final_show.at<cv::Vec3b>((int)std::rint(goal_point.y) - 1, (int)std::rint(goal_point.x) + 1)[2] = 255;
-		final_show.at<cv::Vec3b>((int)std::rint(goal_point.y) + 1, (int)std::rint(goal_point.x) + 1)[2] = 255;
-		final_show.at<cv::Vec3b>((int)std::rint(goal_point.y), (int)std::rint(goal_point.x))[2] = 255;
+		final_show.at<cv::Vec3b>((int)std::rint(goal_point.y) - 1, (int)std::rint(goal_point.x) - 1) = {255, 0, 0};
+		final_show.at<cv::Vec3b>((int)std::rint(goal_point.y) + 1, (int)std::rint(goal_point.x) - 1) = {255, 0, 0};
+		final_show.at<cv::Vec3b>((int)std::rint(goal_point.y) - 1, (int)std::rint(goal_point.x) + 1) = {255, 0, 0};
+		final_show.at<cv::Vec3b>((int)std::rint(goal_point.y) + 1, (int)std::rint(goal_point.x) + 1) = {255, 0, 0};
+		final_show.at<cv::Vec3b>((int)std::rint(goal_point.y) - 2, (int)std::rint(goal_point.x) - 2) = {255, 0, 0};
+		final_show.at<cv::Vec3b>((int)std::rint(goal_point.y) + 2, (int)std::rint(goal_point.x) - 2) = {255, 0, 0};
+		final_show.at<cv::Vec3b>((int)std::rint(goal_point.y) - 2, (int)std::rint(goal_point.x) + 2) = {255, 0, 0};
+		final_show.at<cv::Vec3b>((int)std::rint(goal_point.y) + 2, (int)std::rint(goal_point.x) + 2) = {255, 0, 0};
+		final_show.at<cv::Vec3b>((int)std::rint(goal_point.y), (int)std::rint(goal_point.x)) = {255, 0, 0};
 		cv::namedWindow("Detected Point");
 		cv::imshow("Detected Point", final_show);
-		cv::waitKey(1000);
+		cv::waitKey(100);
 		
 		printf("\tDetected point (%f, %f)\n", goal_point.x, goal_point.y);
 		
