@@ -255,7 +255,6 @@ inline void cameraPntResidualDist(
 		debug_mat->at<cv::Vec3b>((int)std::rint(val(vp)) + 1, (int)std::rint(val(up)) + 1)[1] = 255;
 		debug_mat->at<cv::Vec3b>((int)std::rint(val(vp)), (int)std::rint(val(up)))[1] = 255;
 	}
-
 	//std::getchar();
 }
 
@@ -327,7 +326,6 @@ public:
 		T ox = T(image_pixels[0]);
 		T oy = T(image_pixels[1]);
 	
-		//TODO: Back-check if these are passing through the transform converter properly when not identity.
 		cameraPntResidualDist(
 			CAM_to_TARGET[0], CAM_to_TARGET[1], CAM_to_TARGET[2],
 			T(fx_fixed), T(fy_fixed), T(cx_fixed), T(cy_fixed),
@@ -369,6 +367,11 @@ public:
 		FOREARM_to_BASE_translation[2] = FOREARM_to_BASE_t[2];
 		
 		l = left;
+		
+		fx_fixed = fx;
+		fy_fixed = fy;
+		cx_fixed = cx;
+		cy_fixed = cy;
 	}
 
 	//Takes the per-point constants.
@@ -430,9 +433,9 @@ int main(int argc, char** argv) {
 	
 	//Known values (constant)
 	double projection_matrix[12] = {
-		1395.4832763671875,	0.0,			941.9482338010494,	0.0,
-		0.0,			1412.799072265625,	475.07803466724,	0.0,
-		0.0,			0.0,			1.0,			0.0
+		400.0,	0.0,	500.0,	0.0,
+		0.0,	400.0,	330.0,	0.0,
+		0.0,	0.0,	1.0,	0.0
 	};
 
 	//Unknown values
@@ -445,17 +448,17 @@ int main(int argc, char** argv) {
 	//TODO Find a way to inform this parametrically
 	//TODO For simulation tests, get these ground truths from the simulation
 	//Angle of > 50.0 breaks in sim; 40 does not.
-	CAM_to_FOREARM_t[0] = 0.0;
-	CAM_to_FOREARM_t[1] = 0.0;
-	CAM_to_FOREARM_t[2] = 0.0;
-	CAM_to_FOREARM_r[0] = 0.0;
-	CAM_to_FOREARM_r[1] = 0.0;
-	CAM_to_FOREARM_r[2] = 0.0;
-	l_t[0] = 0.0;
-	l_t[1] = 0.0;
+	CAM_to_FOREARM_t[0] =  0.0;
+	CAM_to_FOREARM_t[1] = -1.0;
+	CAM_to_FOREARM_t[2] =  0.0;
+	CAM_to_FOREARM_r[0] = -90.0;
+	CAM_to_FOREARM_r[1] = -90.0;
+	CAM_to_FOREARM_r[2] =   0.0;
+	l_t[0] = -0.3;
+	l_t[1] = 0.4;
 	l_t[2] = 0.0;
-	r_t[0] = 0.0;
-	r_t[1] = 0.0;
+	r_t[0] = -0.3;
+	r_t[1] = -0.4;
 	r_t[2] = 0.0;
 	
 	for (int i=0; i<nlines; i++) {//For each data entry...

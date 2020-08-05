@@ -385,7 +385,7 @@ int main(int argc, char** argv) {
 		final_show.at<cv::Vec3b>((int)std::rint(goal_point.y), (int)std::rint(goal_point.x)) = {255, 0, 0};
 		cv::namedWindow("Detected Point");
 		cv::imshow("Detected Point", final_show);
-		cv::waitKey(100);
+		cv::waitKey(5000);
 		
 		printf("\tDetected point (%f, %f)\n", goal_point.x, goal_point.y);
 		

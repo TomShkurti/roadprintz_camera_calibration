@@ -138,7 +138,7 @@ bool read_calibration_file(
 			data[n][ 9], data[n][10], data[n][11], data[n][12],
 			data[n][13], data[n][14], data[n][15], data[n][16]
 		;
-		FOREARM_to_BASE = m.transpose().inverse();
+		FOREARM_to_BASE = m;
 
 		xy_pixels(0) = data[n][17];
 		xy_pixels(1) = data[n][18];
