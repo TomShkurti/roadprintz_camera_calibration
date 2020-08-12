@@ -56,17 +56,17 @@ void compute_residuals(const double * intrinsics, const double *extrinsics, cons
         const double k3 = intrinsics[6]; /** distortion k3  */
         const double p1 = intrinsics[7]; /** distortion p1  */
         const double p2 = intrinsics[8]; /** distortion p2  */
-        cout<<"intrinsics: fx, fy, cx, cy: "<<fx<<", "<<fy<<", "<<cx<<", "<<cy<<endl;
-        cout<<"k1,k2,k3,p1,p2: "<<k1<<", "<<k2<<", "<<k3<<", "<<p1<<", "<<p2<<endl;    
+        //cout<<"intrinsics: fx, fy, cx, cy: "<<fx<<", "<<fy<<", "<<cx<<", "<<cy<<endl;
+        //cout<<"k1,k2,k3,p1,p2: "<<k1<<", "<<k2<<", "<<k3<<", "<<p1<<", "<<p2<<endl;    
         //6DOF extrinsics, target0 frame w/rt camera frame:
         double angle_axis[3], cam_frame_to_target_frame_translation[3];
         for (int i = 0; i < 3; i++) {
             angle_axis[i] = extrinsics[i + 3];
             cam_frame_to_target_frame_translation[i] = extrinsics[i];
         }
-        cout <<"compute_residuals(): rotation target frame w/rt cam frame: "<<angle_axis[0]<<", "<<angle_axis[1]<<", "<<angle_axis[2]<<endl;
-        cout <<"compute_residuals(): vector cam to target0 frame: "<<cam_frame_to_target_frame_translation[0]<<", "<<cam_frame_to_target_frame_translation[1]<<", "<<cam_frame_to_target_frame_translation[2]<<endl;
-        cout <<"compute_residuals(): rot mill frame to target frame ax_ay_az: "<<ax_ay_az[0]<<", "<<ax_ay_az[1]<<", "<<ax_ay_az[2]<<endl;
+       // cout <<"compute_residuals(): rotation target frame w/rt cam frame: "<<angle_axis[0]<<", "<<angle_axis[1]<<", "<<angle_axis[2]<<endl;
+       // cout <<"compute_residuals(): vector cam to target0 frame: "<<cam_frame_to_target_frame_translation[0]<<", "<<cam_frame_to_target_frame_translation[1]<<", "<<cam_frame_to_target_frame_translation[2]<<endl;
+       // cout <<"compute_residuals(): rot mill frame to target frame ax_ay_az: "<<ax_ay_az[0]<<", "<<ax_ay_az[1]<<", "<<ax_ay_az[2]<<endl;
          // 1. Estimating the axis of motion (relative to initial target pose)
         double nominal_axis_x[3]; // Nominally we move along camera x, y and z axes
         double nominal_axis_y[3];
@@ -179,8 +179,8 @@ void compute_residuals(const double * intrinsics, const double *extrinsics, cons
         double sqrd_err = residuals[0]*residuals[0]+residuals[1]*residuals[1];
         //cout<<"computed_pixel_i, computed_pixel_j = "<<computed_pixel_i<<", "<<computed_pixel_j<<endl;
         //cout<<"observed pixel_i, pixel_j = "<<pixel_i_<<", "<<pixel_j_<<endl;
-        cout<<"residuals: "<<residuals[0]<<", "<<residuals[1]<<endl<<endl;
-        cout<<"r2, sqrd_err: "<<r2<<", "<<sqrd_err<<endl;
+       // cout<<"residuals: "<<residuals[0]<<", "<<residuals[1]<<endl<<endl;
+       // cout<<"r2, sqrd_err: "<<r2<<", "<<sqrd_err<<endl;
 }
 
 double compute_rms_error(double *intrinsics, double *extrinsics, double *ax_ay_az,
@@ -249,7 +249,7 @@ int main(int argc, char** argv) {
     Eigen::Vector2d xy_pixels, xy_targets;
     Eigen::Vector3d xyz_sled;
     //read the calibration file:
-    std::string fname("calibration_points.txt");
+    std::string fname("/home/tes77/ros_ws/src/roadprintz_camera_calibration/intermediate/intrinsic_calibration_points.csv");
     if (!read_calibration_file(fname, xy_pixels_vec, xy_targets_vec, xyz_sled_vec)) {
         cout << "could not open file " << fname << "; quitting" << endl;
         return 1;
@@ -312,7 +312,7 @@ int main(int argc, char** argv) {
         //CostFunction* cost_function =
         //  new NumericDiffCostFunction<Rat43CostFunctor, FORWARD, 1, 4>(
         //      new Rat43CostFunctor(x, y));
-        cout << "row " << i << ": " << xy_pixels[0] << "," << xy_pixels[1] << "," << xy_targets[0] << "," << xy_targets[1] << "," << xyz_sled[0] << "," << xyz_sled[1] << "," << xyz_sled[2] << endl;
+        //cout << "row " << i << ": " << xy_pixels[0] << "," << xy_pixels[1] << "," << xy_targets[0] << "," << xy_targets[1] << "," << xyz_sled[0] << "," << xyz_sled[1] << "," << xyz_sled[2] << endl;
         problem.AddResidualBlock(
             new NumericDiffCostFunction<WsnCostFunctor, CENTRAL, 2, 9, 6, 3>(
                 new WsnCostFunctor(xy_pixels[0], xy_pixels[1], xy_targets[0], xy_targets[1], xyz_sled[0], xyz_sled[1], xyz_sled[2])),
@@ -335,5 +335,25 @@ int main(int argc, char** argv) {
     std::cout << summary.BriefReport() << "\n";
     std::cout << "x : " << initial_x
               << " -> " << x << "\n"; */
+              
+              
+    /*std::printf("TIP_to_TARGET:\n");
+	std::printf("\tx = %f\ty = %f\tz = %f\n", TIP_to_TARGET_t[0], TIP_to_TARGET_t[1], TIP_to_TARGET_t[2]);
+	std::printf("\tr = %f\tp = %f\tw = %f\n", dtor(TIP_to_TARGET_r[0]), dtor(TIP_to_TARGET_r[1]), dtor(TIP_to_TARGET_r[2]));
+	
+	std::printf("CAM_to_BASE:\n");
+	std::printf("\tx = %f\ty = %f\tz = %f\n", CAM_to_BASE_t[0], CAM_to_BASE_t[1], CAM_to_BASE_t[2]);
+	std::printf("\tr = %f\tp = %f\tw = %f\n", dtor(CAM_to_BASE_r[0]), dtor(CAM_to_BASE_r[1]), dtor(CAM_to_BASE_r[2]));*/
+	
+	std::printf("INTRINSICS:\n");
+	std::printf(
+		"\tfx = %f\tfy = %f\t cx = %f\t cy = %f\n",
+		//fx		fy		cx		cy
+		intrinsics[0], intrinsics[1], intrinsics[2], intrinsics[3]
+	);
+	std::printf(
+		"\tk1 = %f\tk2 = %f\t k3 = %f\t p1 = %f\t p2 = %f\n",
+		intrinsics[4], intrinsics[5], intrinsics[6], intrinsics[7], intrinsics[8]
+	);
     return 0;
 }

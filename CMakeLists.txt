@@ -60,6 +60,7 @@ cs_add_executable(detector_corners src/detector_corners.cpp)
 cs_add_executable(detector_integral src/detector_integral.cpp)
 
 cs_add_executable(intrinsic src/INTRINSIC_CAL.cpp)
+cs_add_executable(intrinsic_old ceres_code/wsn_cam_calib_ceres.cpp)
 cs_add_executable(intrinsic_detect src/INTRINSIC_DETECT.cpp)
 
 
@@ -90,6 +91,7 @@ target_link_libraries( detector_integral ${OpenCV_LIBS})
 
 
 target_link_libraries(intrinsic ${OpenCV_LIBS} ${CERES_LIBRARIES})
+target_link_libraries(intrinsic_old ${OpenCV_LIBS} ${CERES_LIBRARIES})
 target_link_libraries(intrinsic_detect circle_detector ${OpenCV_LIBS} ${CERES_LIBRARIES})
 
 

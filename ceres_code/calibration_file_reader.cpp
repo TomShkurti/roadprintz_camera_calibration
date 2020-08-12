@@ -101,12 +101,12 @@ bool read_calibration_file(std::string fname, std::vector<Eigen::Vector2d> &xy_p
 		if (min_record_size > data[ n ].size())
 			min_record_size = data[ n ].size();
 	}
-	if (max_record_size > 7) {
+	if (max_record_size > 34) {
 		cout<<"bad file"<<endl;
 		cout << "The largest record has " << max_record_size << " fields.\n";
 		return false;
 	}
-	if (min_record_size < 7) {
+	if (min_record_size < 34) {
 		cout<<"bad file"<<endl;
 		cout << "The smallest record has " << min_record_size << " fields.\n";
 		return false;
@@ -122,7 +122,7 @@ bool read_calibration_file(std::string fname, std::vector<Eigen::Vector2d> &xy_p
     
 	
 	int nlines = data.size();
-	for (int n = 0; n < nlines; n++) {
+	/*for (int n = 0; n < nlines; n++) {
             xy_pixels(0) = data[n][0];
             xy_pixels(1) = data[n][1];
             xy_targets(0) = data[n][2];
@@ -134,6 +134,37 @@ bool read_calibration_file(std::string fname, std::vector<Eigen::Vector2d> &xy_p
             xy_pixels_vec.push_back(xy_pixels);
             xy_targets_vec.push_back(xy_targets);
             xyz_sled_vec.push_back(xyz_sled_vals);
+	}*/
+        Eigen::Affine3d BASE_to_TIP;
+	Eigen::Affine3d TARGET_to_POINT;
+	for (int n = 0; n < nlines; n++) {
+		Eigen::Matrix4d m;
+		m <<
+			data[n][ 0], data[n][ 1], data[n][ 2], data[n][ 3],
+			data[n][ 4], data[n][ 5], data[n][ 6], data[n][ 7],
+			data[n][ 8], data[n][ 9], data[n][10], data[n][11],
+			data[n][12], data[n][13], data[n][14], data[n][15]
+		;
+		BASE_to_TIP = m.transpose();
+		m <<
+			data[n][16], data[n][17], data[n][18], data[n][19],
+			data[n][20], data[n][21], data[n][22], data[n][23],
+			data[n][24], data[n][25], data[n][26], data[n][27],
+			data[n][28], data[n][29], data[n][30], data[n][31]
+		;
+		TARGET_to_POINT = m.transpose();
+		
+		xy_pixels(0) = data[n][32];
+		xy_pixels(1) = data[n][33];
+		xy_targets(0) = TARGET_to_POINT.translation().x();
+		xy_targets(1) = TARGET_to_POINT.translation().y();
+		xyz_sled_vals(0) = BASE_to_TIP.translation().x();
+		xyz_sled_vals(1) = BASE_to_TIP.translation().y();
+		xyz_sled_vals(2) = BASE_to_TIP.translation().z();
+        
+		xy_pixels_vec.push_back(xy_pixels);
+		xy_targets_vec.push_back(xy_targets);
+		xyz_sled_vec.push_back(xyz_sled_vals);
 	}
 	return true;
 }
