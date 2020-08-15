@@ -482,8 +482,8 @@ int main(int argc, char** argv) {
 						", " << dz_mill << ", 1,\t" <<
 						
 						"1,0,0,0,0,1,0,0,0,0,1,0," <<//TODO Make doubly sure the target scaling is fixed!!!
-						j_circle*CIRCLE_SPACING * 0.98 << ", " <<
-						i_circle*CIRCLE_SPACING * 0.98 << ", " <<
+						j_circle*CIRCLE_SPACING << ", " <<
+						i_circle*CIRCLE_SPACING << ", " <<
 						"0.0, 1,\t" << 
 						
 						center.x << ", " <<
@@ -498,7 +498,7 @@ int main(int argc, char** argv) {
 		}
 		cv::imshow("Src image", image);
 		///imwrite(data_path + "red_cirlces.png", image);
-		cv::waitKey(1000);
+		cv::waitKey(100);
 	}
 	calib_output_file.close();
 	return 0;

@@ -49,7 +49,7 @@ cs_add_executable(ipcam_svc src/ipcam_svc.cpp)
 cs_add_executable(test_find_contours src/test_find_contours.cpp)
 cs_add_executable(test_find_patterns src/test_find_patterns.cpp)
 
-cs_add_executable(optimize src/wsn_cam_calib_ceres.cpp)
+#cs_add_executable(optimize src/wsn_cam_calib_ceres.cpp)
 cs_add_executable(optimize_randnoise src/wsn_cam_calib_ceres_randnoise.cpp)
 cs_add_executable(extrinsic src/wsn_cam_calib_ceres_EXTRINSIC.cpp)
 cs_add_executable(camera src/wsn_cam_calib_ceres_CAMERA.cpp)
@@ -61,6 +61,8 @@ cs_add_executable(detector_integral src/detector_integral.cpp)
 
 cs_add_executable(intrinsic src/INTRINSIC_CAL.cpp)
 cs_add_executable(intrinsic_old ceres_code/wsn_cam_calib_ceres.cpp)
+cs_add_executable(intrinsic_old_rand ceres_code/wsn_cam_calib_ceres_rand.cpp)
+cs_add_executable(intrinsic_old_periphery ceres_code/wsn_cam_calib_ceres_periphery.cpp)
 cs_add_executable(intrinsic_detect src/INTRINSIC_DETECT.cpp)
 
 
@@ -79,7 +81,7 @@ target_link_libraries( ipcam_svc ${OpenCV_LIBS})
 target_link_libraries( test_find_contours circle_detector ${OpenCV_LIBS})
 target_link_libraries( test_find_patterns circle_detector ${OpenCV_LIBS})
 
-target_link_libraries(optimize ${OpenCV_LIBS} ${CERES_LIBRARIES})
+#target_link_libraries(optimize ${OpenCV_LIBS} ${CERES_LIBRARIES})
 target_link_libraries(extrinsic ${OpenCV_LIBS} ${CERES_LIBRARIES})
 target_link_libraries(camera ${OpenCV_LIBS} ${CERES_LIBRARIES})
 target_link_libraries(head ${OpenCV_LIBS} ${CERES_LIBRARIES})
@@ -92,6 +94,8 @@ target_link_libraries( detector_integral ${OpenCV_LIBS})
 
 target_link_libraries(intrinsic ${OpenCV_LIBS} ${CERES_LIBRARIES})
 target_link_libraries(intrinsic_old ${OpenCV_LIBS} ${CERES_LIBRARIES})
+target_link_libraries(intrinsic_old_rand ${OpenCV_LIBS} ${CERES_LIBRARIES})
+target_link_libraries(intrinsic_old_periphery ${OpenCV_LIBS} ${CERES_LIBRARIES})
 target_link_libraries(intrinsic_detect circle_detector ${OpenCV_LIBS} ${CERES_LIBRARIES})
 
 
