@@ -352,8 +352,24 @@ int main(int argc, char** argv) {
 		intrinsics[0], intrinsics[1], intrinsics[2], intrinsics[3]
 	);
 	std::printf(
-		"\tk1 = %f\tk2 = %f\t k3 = %f\t p1 = %f\t p2 = %f\n",
+		"\tk1 = %f\tk2 = %f\t k3 = %f\t p1 = %f\t p2 = %f\n\n",
 		intrinsics[4], intrinsics[5], intrinsics[6], intrinsics[7], intrinsics[8]
+	);
+	
+	std::printf("CAMERA TO BASE:\n");
+	std::printf(
+		"\tx = %f\ty = %f\t z = %f\n",
+		extrinsics[0], extrinsics[1], extrinsics[2]
+	);
+	std::printf(
+		"\tr = %f\tp = %f\t w = %f\n\n",
+		extrinsics[3], extrinsics[4], extrinsics[5]
+	);
+	
+	std::printf("TIP TO TARGET:\n");
+	std::printf(
+		"\tr = %f\tp = %f\t w = %f\n\n",
+		ax_ay_az[0], ax_ay_az[1], ax_ay_az[2]
 	);
     return 0;
 }
