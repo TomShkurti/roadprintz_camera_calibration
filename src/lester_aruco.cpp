@@ -115,7 +115,7 @@ int main(int argc, char** argv) {
 			
 			cv::namedWindow("Detected Point");
 			cv::imshow("Detected Point", final_show);
-			cv::waitKey(500);
+			cv::waitKey();
 		
 			cv::destroyAllWindows();
 			

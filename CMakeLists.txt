@@ -67,6 +67,7 @@ cs_add_executable(intrinsic_detect src/INTRINSIC_DETECT.cpp)
 
 
 cs_add_executable(lester_shapematch src/lester_shapematch.cpp)
+cs_add_executable(lester_aruco src/lester_aruco.cpp)
 cs_add_executable(extrinsic_cam src/CAMERA_MONOTARGET_CAL.cpp)
 
 #cs_add_executable(harris_corners src/harris_corners.cpp)
@@ -100,6 +101,7 @@ target_link_libraries(intrinsic_detect circle_detector ${OpenCV_LIBS} ${CERES_LI
 
 
 target_link_libraries(lester_shapematch ${OpenCV_LIBS})
+target_link_libraries(lester_aruco ${OpenCV_LIBS})
 target_link_libraries(extrinsic_cam ${OpenCV_LIBS} ${CERES_LIBRARIES})
 
 cs_install()
