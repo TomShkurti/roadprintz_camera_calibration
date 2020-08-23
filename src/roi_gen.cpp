@@ -79,7 +79,7 @@ int main(int argc, char** argv) {
 		
 		printf("%s\n", x.path().filename().native().c_str());
 		
-		for(int i = 0; i < 6; i++){
+		for(int i = 0; i < 8; i++){
 			for(int c = 0; c < 4; c++){
 				std::string code;
 				switch(c){
