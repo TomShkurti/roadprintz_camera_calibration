@@ -108,7 +108,8 @@ int main(int argc, char** argv) {
 				cv::waitKey();
 				
 				if(cc == 2){
-					roi_output_file << x.path().filename().native() << ", " << u1 << ", " << v1 << ", " << u2 << ", " << v2 << "\n";
+					roi_output_file << x.path().filename().native() << ", " << i << ", " << c << ", "
+						 << u1 << ", " << v1 << ", " << u2 << ", " << v2 << "\n";
 				}
 				
 				cv::destroyAllWindows();
