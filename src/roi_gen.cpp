@@ -74,6 +74,7 @@ int main(int argc, char** argv) {
 	
 	for(boost::filesystem::directory_entry& x : boost::filesystem::directory_iterator(image_folder_path)){
 		img_pure = cv::imread(x.path().native());
+		cv::resize(img_pure, img_pure, cv::Size(0,0), 0.5, 0.5);
 		img_pure.copyTo(img);
 		
 		printf("%s\n", x.path().filename().native().c_str());
@@ -109,7 +110,7 @@ int main(int argc, char** argv) {
 				
 				if(cc == 2){
 					roi_output_file << x.path().filename().native() << ", " << i << ", " << c << ", "
-						 << u1 << ", " << v1 << ", " << u2 << ", " << v2 << "\n";
+						 << u1 * 2 << ", " << v1 * 2 << ", " << u2 * 2 << ", " << v2 * 2 << "\n";
 				}
 				
 				cv::destroyAllWindows();
