@@ -71,6 +71,7 @@ cs_add_executable(lester_aruco src/lester_aruco.cpp)
 cs_add_executable(extrinsic_cam src/CAMERA_MONOTARGET_CAL.cpp)
 
 cs_add_executable(roi_gen src/roi_gen.cpp)
+cs_add_executable(tapes_detect src/tapes_detect.cpp)
 
 #cs_add_executable(harris_corners src/harris_corners.cpp)
 #the following is required, if desire to link a node in this package with a library created in this same package
@@ -108,6 +109,7 @@ target_link_libraries(extrinsic_cam ${OpenCV_LIBS} ${CERES_LIBRARIES})
 
 
 target_link_libraries(roi_gen ${OpenCV_LIBS})
+target_link_libraries(tapes_detect ${OpenCV_LIBS})
 
 cs_install()
 cs_export()
