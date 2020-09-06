@@ -264,60 +264,34 @@ public:
 	//Is given the UNKNOWN TERMS
 	template<typename T>
 	bool operator()(//TODO Why are all these const / should all these be const?
-		const T* FOREARM_to_LIDAR_translation, const T* FOREARM_to_LIDAR_rotation,
+		const T* CAM_to_FOREARM_translation, const T* CAM_to_FOREARM_rotation,
+		const T* BASE_to_TARGET_translation, const T* BASE_to_TARGET_rotation,
 	T* residual) const {
 
 		//1: Transform target points into camera frame
-		//	CAM_to_POINT = CAM_to_FOREARM * FOREARM_to_BASE-C * BASE_to_FOREARM_L * FOREARM_to_LIDAR * LIDAR_to_POINT
+		//	CAM_to_POINT = CAM_to_FOREARM * FOREARM_to_BASE_C * BASE_to_TARGET * TARGET_to_POINT
 	
-		//	1a: LIDAR_to_POINT
-		T LIDAR_to_POINT [3];
-		LIDAR_to_POINT[0] = T(px);
-		LIDAR_to_POINT[1] = T(py);
-		LIDAR_to_POINT[2] = T(pz);
+		//	1a: TARGET_to_POINT
+		T TARGET_to_POINT [3];
+		TARGET_to_POINT[0] = T(px);
+		TARGET_to_POINT[1] = T(py);
+		TARGET_to_POINT[2] = T(pz);
 	
-		/*std::cout << "LIDAR TO POINT\n";
-		std::cout << LIDAR_to_POINT[0] << "\n";
-		std::cout << LIDAR_to_POINT[1] << "\n";
-		std::cout << LIDAR_to_POINT[2] << "\n\n";*/
+		/*std::cout << "TARGET TO POINT\n";
+		std::cout << TARGET_to_POINT[0] << "\n";
+		std::cout << TARGET_to_POINT[1] << "\n";
+		std::cout << TARGET_to_POINT[2] << "\n\n";*/
 	
-		//	1b: FOREARM_L_to_LIDAR * LIDAR_to_POINT
-		T FOREARM_L_to_POINT [3];
-		transformPoint_euler(FOREARM_to_LIDAR_translation, FOREARM_to_LIDAR_rotation, LIDAR_to_POINT, FOREARM_L_to_POINT);
-		
-		/*std::cout << "FOREARM L TO POINT\n";
-		std::cout << FOREARM_L_to_POINT[0] << "\n";
-		std::cout << FOREARM_L_to_POINT[1] << "\n";
-		std::cout << FOREARM_L_to_POINT[2] << "\n\n";*/
-		
-		
-		
-		//	1c: BASE_to_FOREARM_L * FOREARM_to_LIDAR * LIDAR_to_POINT
-		T BASE_to_POINT[3];
-		T BASE_to_FOREARM_L_r [9];
-		BASE_to_FOREARM_L_r[0] = T(BASE_to_FOREARM_L_rotation[0]);
-		BASE_to_FOREARM_L_r[1] = T(BASE_to_FOREARM_L_rotation[1]);
-		BASE_to_FOREARM_L_r[2] = T(BASE_to_FOREARM_L_rotation[2]);
-		BASE_to_FOREARM_L_r[3] = T(BASE_to_FOREARM_L_rotation[3]);
-		BASE_to_FOREARM_L_r[4] = T(BASE_to_FOREARM_L_rotation[4]);
-		BASE_to_FOREARM_L_r[5] = T(BASE_to_FOREARM_L_rotation[5]);
-		BASE_to_FOREARM_L_r[6] = T(BASE_to_FOREARM_L_rotation[6]);
-		BASE_to_FOREARM_L_r[7] = T(BASE_to_FOREARM_L_rotation[7]);
-		BASE_to_FOREARM_L_r[8] = T(BASE_to_FOREARM_L_rotation[8]);
-		
-		T BASE_to_FOREARM_L_t [3];
-		BASE_to_FOREARM_L_t[0] = T(BASE_to_FOREARM_L_translation[0]);
-		BASE_to_FOREARM_L_t[1] = T(BASE_to_FOREARM_L_translation[1]);
-		BASE_to_FOREARM_L_t[2] = T(BASE_to_FOREARM_L_translation[2]);
-		transformPoint_rm(BASE_to_FOREARM_L_t, BASE_to_FOREARM_L_r, FOREARM_L_to_POINT, BASE_to_POINT);
+		//	1b: BASE_to_TARGET * TARGET_to_POINT
+		T BASE_to_POINT [3];
+		transformPoint_euler(BASE_to_TARGET_translation, BASE_to_TARGET_rotation, TARGET_to_POINT, BASE_to_POINT);
 		
 		/*std::cout << "BASE TO POINT\n";
 		std::cout << BASE_to_POINT[0] << "\n";
 		std::cout << BASE_to_POINT[1] << "\n";
-		std::cout << BASE_to_POINT[2] << "\n\n";*/
+		std::cout << BASE_to_POINT[2] << "\n\n";*/		
 		
-		
-		//	1d: FOREARM_C_to_BASE * BASE_to_FOREARM_L * FOREARM_to_LIDAR * LIDAR_to_POINT
+		//	1c: FOREARM_C_to_BASE * BASE_to_TARGET * TARGET_to_POINT
 		T FOREARM_C_to_POINT[3];
 		T FOREARM_C_to_BASE_r [9];
 		FOREARM_C_to_BASE_r[0] = T(FOREARM_C_to_BASE_rotation[0]);
@@ -336,26 +310,14 @@ public:
 		FOREARM_C_to_BASE_t[2] = T(FOREARM_C_to_BASE_translation[2]);
 		transformPoint_rm(FOREARM_C_to_BASE_t, FOREARM_C_to_BASE_r, BASE_to_POINT, FOREARM_C_to_POINT);
 		
+		/*std::cout << "FOREARM TO POINT\n";
+		std::cout << FOREARM_C_to_POINT[0] << "\n";
+		std::cout << FOREARM_C_to_POINT[1] << "\n";
+		std::cout << FOREARM_C_to_POINT[2] << "\n\n";*/
 		
-		
-		//	1e: CAM_to_FOREARM_C * FOREARM_C_to_BASE * BASE_to_FOREARM_L * FOREARM_to_LIDAR * LIDAR_to_POINT
+		//	1d: CAM_to_FOREARM_C * FOREARM_C_to_BASE * BASE_to_TARGET * TARGET_to_POINT
 		T CAM_to_POINT [3];
-		T CAM_to_FOREARM_C_r [9];
-		CAM_to_FOREARM_C_r[0] = T(CAM_to_FOREARM_C_rotation[0]);
-		CAM_to_FOREARM_C_r[1] = T(CAM_to_FOREARM_C_rotation[1]);
-		CAM_to_FOREARM_C_r[2] = T(CAM_to_FOREARM_C_rotation[2]);
-		CAM_to_FOREARM_C_r[3] = T(CAM_to_FOREARM_C_rotation[3]);
-		CAM_to_FOREARM_C_r[4] = T(CAM_to_FOREARM_C_rotation[4]);
-		CAM_to_FOREARM_C_r[5] = T(CAM_to_FOREARM_C_rotation[5]);
-		CAM_to_FOREARM_C_r[6] = T(CAM_to_FOREARM_C_rotation[6]);
-		CAM_to_FOREARM_C_r[7] = T(CAM_to_FOREARM_C_rotation[7]);
-		CAM_to_FOREARM_C_r[8] = T(CAM_to_FOREARM_C_rotation[8]);
-		
-		T CAM_to_FOREARM_C_t [3];
-		CAM_to_FOREARM_C_t[0] = T(CAM_to_FOREARM_C_translation[0]);
-		CAM_to_FOREARM_C_t[1] = T(CAM_to_FOREARM_C_translation[1]);
-		CAM_to_FOREARM_C_t[2] = T(CAM_to_FOREARM_C_translation[2]);
-		transformPoint_rm(CAM_to_FOREARM_C_t, CAM_to_FOREARM_C_r, FOREARM_C_to_POINT, CAM_to_POINT);
+		transformPoint_euler(CAM_to_FOREARM_translation, CAM_to_FOREARM_rotation, FOREARM_C_to_POINT, CAM_to_POINT);
 		
 		/*std::cout << "CAM TO POINT\n";
 		std::cout << CAM_to_POINT[0] << "\n";
@@ -379,14 +341,8 @@ public:
 	//Member vars- all the perpoint constants
 	double image_pixels[2]; /** observed px location of object in image */
 	
-	double BASE_to_FOREARM_L_rotation[9];
-	double BASE_to_FOREARM_L_translation[3];
-	
 	double FOREARM_C_to_BASE_rotation[9];
 	double FOREARM_C_to_BASE_translation[3];
-	
-	double CAM_to_FOREARM_C_rotation[9];
-	double CAM_to_FOREARM_C_translation[3];
 	
 	double px;
 	double py;
@@ -402,12 +358,8 @@ public:
 		const double image_px[2],
 		
 		const double pnt_x, const double pnt_y, const double pnt_z,
-
-		const double BASE_to_FOREARM_L_r[9], const double BASE_to_FOREARM_L_t[3],
 		
 		const double FOREARM_C_to_BASE_r[9], const double FOREARM_C_to_BASE_t[3],
-		
-		const double CAM_to_FOREARM_C_r[9], const double CAM_to_FOREARM_C_t[3],
 		
 		const double fx, const double fy, const double cx, const double cy
 	){
@@ -419,19 +371,11 @@ public:
 		pz = pnt_z;
 		
 		for(int i = 0; i < 9; i++){
-			BASE_to_FOREARM_L_rotation[i] = BASE_to_FOREARM_L_r[i];
 			FOREARM_C_to_BASE_rotation[i] = FOREARM_C_to_BASE_r[i];
-			CAM_to_FOREARM_C_rotation[i] = CAM_to_FOREARM_C_r[i];
 		}
-		BASE_to_FOREARM_L_translation[0] = BASE_to_FOREARM_L_t[0];
-		BASE_to_FOREARM_L_translation[1] = BASE_to_FOREARM_L_t[1];
-		BASE_to_FOREARM_L_translation[2] = BASE_to_FOREARM_L_t[2];
 		FOREARM_C_to_BASE_translation[0] = FOREARM_C_to_BASE_t[0];
 		FOREARM_C_to_BASE_translation[1] = FOREARM_C_to_BASE_t[1];
 		FOREARM_C_to_BASE_translation[2] = FOREARM_C_to_BASE_t[2];
-		CAM_to_FOREARM_C_translation[0] = CAM_to_FOREARM_C_t[0];
-		CAM_to_FOREARM_C_translation[1] = CAM_to_FOREARM_C_t[1];
-		CAM_to_FOREARM_C_translation[2] = CAM_to_FOREARM_C_t[2];
 		
 		fx_fixed = fx;
 		fy_fixed = fy;
@@ -443,23 +387,17 @@ public:
 	static ceres::CostFunction* Create(
 		const double image_px[2],
 		const double pnt_x, const double pnt_y, const double pnt_z,
-		const double BASE_to_FOREARM_L_r[9], const double BASE_to_FOREARM_L_t[3],
 		const double FOREARM_C_to_BASE_r[9], const double FOREARM_C_to_BASE_t[3],
-		const double CAM_to_FOREARM_C_r[9], const double CAM_to_FOREARM_C_t[3],
 		const double fx, const double fy, const double cx, const double cy
 	){
 		return new ceres::AutoDiffCostFunction<ExtrinsicCalEntry, 2,
-			3, 3
+			3, 3, 3, 3
 		>(new ExtrinsicCalEntry(
 			image_px,
 			
 			pnt_x, pnt_y, pnt_z,
 			
-			BASE_to_FOREARM_L_r, BASE_to_FOREARM_L_t,
-			
 			FOREARM_C_to_BASE_r, FOREARM_C_to_BASE_t,
-			
-			CAM_to_FOREARM_C_r, CAM_to_FOREARM_C_t,
 			
 			fx, fy, cx, cy
 		));
@@ -521,45 +459,35 @@ int main(int argc, char** argv) {
 		0.0,		1638.139550,	774.029343,	0.0,
 		0.0,		0.0,		1.0,		0.0
 	};
-	
-	double CAM_to_FOREARM_C_t[3] = {
-		 1.062,
-		-0.105,
-		-0.067
-	};
-	double CAM_to_FOREARM_C_r[9] = {
-		 0.0,  0.9740348, -0.2263984,
-		 0.0, -0.2263984, -0.9740348,
-		-1.0,  0.0, 		 1.0
-	};
-	
-	double FOREARM_C_to_BASE_t[3] = {
-		-0.759,
-		-0.0,
-		 1.536
-	};
-	double FOREARM_C_to_BASE_r[9] = {
-		0.5811066,	-0.8136452,	-0.0172197,
-		-0.0003882, 	0.0208817,	-0.9997819,
-		0.8138274,	0.5809865,	0.0118186
-	};
 
 	//Unknown values
-	double FOREARM_to_LIDAR_t [3];
-	double FOREARM_to_LIDAR_r [3];
+	double BASE_to_TARGET_t [3];
+	double BASE_to_TARGET_r [3];
+	
+	double CAM_to_FOREARM_t[3];
+	double CAM_to_FOREARM_r[3];
 	
 	//Initialize the unknowns
 	//TODO Find a way to inform this parametrically
 	//TODO For simulation tests, get these ground truths from the simulation
 	//Angle of > 50.0 breaks in sim; 40 does not.
-	FOREARM_to_LIDAR_t[0] =  0.0;
-	FOREARM_to_LIDAR_t[1] =  0.0;
-	FOREARM_to_LIDAR_t[2] =  0.0;
+	BASE_to_TARGET_t[0] =  0.0;
+	BASE_to_TARGET_t[1] =  0.0;
+	BASE_to_TARGET_t[2] =  0.0;
 	//Determined with https://www.andre-gaschler.com/rotationconverter/
 	//Note that the Euler Angle output should be in Degrees and set to ZYX
-	FOREARM_to_LIDAR_r[0] =  0.0;
-	FOREARM_to_LIDAR_r[1] =  0.0;
-	FOREARM_to_LIDAR_r[2] =  0.0;
+	BASE_to_TARGET_r[0] =  0.0;
+	BASE_to_TARGET_r[1] =  0.0;
+	BASE_to_TARGET_r[2] =  0.0;
+	
+	CAM_to_FOREARM_t[0] =  0.0;
+	CAM_to_FOREARM_t[1] =  0.0;
+	CAM_to_FOREARM_t[2] =  0.0;
+	//Determined with https://www.andre-gaschler.com/rotationconverter/
+	//Note that the Euler Angle output should be in Degrees and set to ZYX
+	CAM_to_FOREARM_r[0] =  0.0;
+	CAM_to_FOREARM_r[1] =  0.0;
+	CAM_to_FOREARM_r[2] =  0.0;
 	
 	for (int i=0; i<nlines; i++) {//For each data entry...
 		//Add the per-point constants
@@ -583,10 +511,8 @@ int main(int argc, char** argv) {
 		CostFunction *cost_function = ExtrinsicCalEntry::Create(
 			pixvec,
 			points_in_space(0), points_in_space(1), points_in_space(2),
-			rotation_F, translation_F,
 			
-			FOREARM_C_to_BASE_r, FOREARM_C_to_BASE_t,
-			CAM_to_FOREARM_C_r, CAM_to_FOREARM_C_t,
+			rotation_F, translation_F,
 			
 			projection_matrix[0], projection_matrix[5], projection_matrix[2], projection_matrix[6]
 		);
@@ -603,7 +529,8 @@ int main(int argc, char** argv) {
 		
 		//Add the parameters to optimize
 		problem.AddResidualBlock(cost_function, NULL,
-			FOREARM_to_LIDAR_t, FOREARM_to_LIDAR_r
+			CAM_to_FOREARM_t, CAM_to_FOREARM_r,
+			BASE_to_TARGET_t, BASE_to_TARGET_r
 		);
 	}
 	
@@ -611,12 +538,19 @@ int main(int argc, char** argv) {
 	
 	
 	//Bound the rotations.
-	problem.SetParameterLowerBound(FOREARM_to_LIDAR_r, 0, -190.0);
-	problem.SetParameterUpperBound(FOREARM_to_LIDAR_r, 0,  190.0);
-	problem.SetParameterLowerBound(FOREARM_to_LIDAR_r, 1, -190.0);
-	problem.SetParameterUpperBound(FOREARM_to_LIDAR_r, 1,  190.0);
-	problem.SetParameterLowerBound(FOREARM_to_LIDAR_r, 2, -190.0);
-	problem.SetParameterUpperBound(FOREARM_to_LIDAR_r, 2,  190.0);
+	problem.SetParameterLowerBound(BASE_to_TARGET_r, 0, -190.0);
+	problem.SetParameterUpperBound(BASE_to_TARGET_r, 0,  190.0);
+	problem.SetParameterLowerBound(BASE_to_TARGET_r, 1, -190.0);
+	problem.SetParameterUpperBound(BASE_to_TARGET_r, 1,  190.0);
+	problem.SetParameterLowerBound(BASE_to_TARGET_r, 2, -190.0);
+	problem.SetParameterUpperBound(BASE_to_TARGET_r, 2,  190.0);
+	
+	problem.SetParameterLowerBound(CAM_to_FOREARM_r, 0, -190.0);
+	problem.SetParameterUpperBound(CAM_to_FOREARM_r, 0,  190.0);
+	problem.SetParameterLowerBound(CAM_to_FOREARM_r, 1, -190.0);
+	problem.SetParameterUpperBound(CAM_to_FOREARM_r, 1,  190.0);
+	problem.SetParameterLowerBound(CAM_to_FOREARM_r, 2, -190.0);
+	problem.SetParameterUpperBound(CAM_to_FOREARM_r, 2,  190.0);
 	
 	/*std::cout << "" << FOREARM_to_BASE_vec[0].matrix() << "\n\n";
 	std::cout << "" << FOREARM_to_BASE_vec[0].linear() << "\n\n";
@@ -650,9 +584,13 @@ int main(int argc, char** argv) {
 
 	std::cout << summary.FullReport() << "\n\n\n";
 
-	std::printf("FOREARM to LIDAR:\n");
-	std::printf("\tx = %f\ty = %f\tz = %f\n", FOREARM_to_LIDAR_t[0], FOREARM_to_LIDAR_t[1], FOREARM_to_LIDAR_t[2]);
-	std::printf("\tr = %f\tp = %f\tw = %f\n", dtor(FOREARM_to_LIDAR_r[0]), dtor(FOREARM_to_LIDAR_r[1]), dtor(FOREARM_to_LIDAR_r[2]));
+	std::printf("BASE to TARGET:\n");
+	std::printf("\tx = %f\ty = %f\tz = %f\n", BASE_to_TARGET_t[0], BASE_to_TARGET_t[1], BASE_to_TARGET_t[2]);
+	std::printf("\tr = %f\tp = %f\tw = %f\n", dtor(BASE_to_TARGET_r[0]), dtor(BASE_to_TARGET_r[1]), dtor(BASE_to_TARGET_r[2]));
+	
+	std::printf("CAM to FOREARM:\n");
+	std::printf("\tx = %f\ty = %f\tz = %f\n", CAM_to_FOREARM_t[0], CAM_to_FOREARM_t[1], CAM_to_FOREARM_t[2]);
+	std::printf("\tr = %f\tp = %f\tw = %f\n", dtor(CAM_to_FOREARM_r[0]), dtor(CAM_to_FOREARM_r[1]), dtor(CAM_to_FOREARM_r[2]));
 	
 	cv::destroyAllWindows();
 
