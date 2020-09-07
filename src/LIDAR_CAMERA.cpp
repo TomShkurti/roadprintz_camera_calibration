@@ -480,14 +480,14 @@ int main(int argc, char** argv) {
 	BASE_to_TARGET_r[1] =  0.0;
 	BASE_to_TARGET_r[2] =  0.0;
 	
-	CAM_to_FOREARM_t[0] =  0.0;
-	CAM_to_FOREARM_t[1] =  0.0;
-	CAM_to_FOREARM_t[2] =  0.0;
+	CAM_to_FOREARM_t[0] =  -0.1050;
+	CAM_to_FOREARM_t[1] =  -1.0620;
+	CAM_to_FOREARM_t[2] =  0.067;
 	//Determined with https://www.andre-gaschler.com/rotationconverter/
 	//Note that the Euler Angle output should be in Degrees and set to ZYX
 	CAM_to_FOREARM_r[0] =  0.0;
 	CAM_to_FOREARM_r[1] =  0.0;
-	CAM_to_FOREARM_r[2] =  0.0;
+	CAM_to_FOREARM_r[2] =  90.0;
 	
 	for (int i=0; i<nlines; i++) {//For each data entry...
 		//Add the per-point constants
