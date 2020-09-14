@@ -592,6 +592,27 @@ int main(int argc, char** argv) {
 	std::printf("\tx = %f\ty = %f\tz = %f\n", CAM_to_FOREARM_t[0], CAM_to_FOREARM_t[1], CAM_to_FOREARM_t[2]);
 	std::printf("\tr = %f\tp = %f\tw = %f\n", dtor(CAM_to_FOREARM_r[0]), dtor(CAM_to_FOREARM_r[1]), dtor(CAM_to_FOREARM_r[2]));
 	
+	Eigen::Affine3d tmp;
+	tmp =
+		Eigen::AngleAxisd(dtor(CAM_to_FOREARM_r[0]), Eigen::Vector3d::UnitZ()) *
+		Eigen::AngleAxisd(dtor(CAM_to_FOREARM_r[1]), Eigen::Vector3d::UnitY()) *
+		Eigen::AngleAxisd(dtor(CAM_to_FOREARM_r[2]), Eigen::Vector3d::UnitX())
+	;
+	tmp.translation() = Eigen::Vector3d(CAM_to_FOREARM_t[0], CAM_to_FOREARM_t[1], CAM_to_FOREARM_t[2]);
+	
+	Eigen::Affine3d inv = tmp.inverse();
+	
+	Eigen::Quaterniond q = Eigen::Quaterniond(inv.rotation());	
+	
+	std::ofstream lf_os(data_path + "/launch/st_publisher_lidar.launch");
+	lf_os << "<launch>\n";
+	lf_os << "	<node pkg=\"tf\" type=\"static_transform_publisher\" name=\"stf\" args=\"";
+	lf_os << inv.translation()(0) << " " << inv.translation()(1) << " " << inv.translation()(2) << " ";
+	lf_os << q.x() << " " << q.y() << " " << q.z() << " " << q.w();
+	lf_os << " forearm camera_corrected 1000\"/>\n";
+	lf_os << "</launch>";
+	lf_os.close();
+	
 	cv::destroyAllWindows();
 
 	return 0;
