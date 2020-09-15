@@ -594,11 +594,11 @@ int main(int argc, char** argv) {
 	
 	Eigen::Affine3d tmp;
 	tmp =
-		Eigen::AngleAxisd(dtor(CAM_to_FOREARM_r[0]), Eigen::Vector3d::UnitZ()) *
+		Eigen::AngleAxisd(dtor(CAM_to_FOREARM_r[2]), Eigen::Vector3d::UnitZ()) *
 		Eigen::AngleAxisd(dtor(CAM_to_FOREARM_r[1]), Eigen::Vector3d::UnitY()) *
-		Eigen::AngleAxisd(dtor(CAM_to_FOREARM_r[2]), Eigen::Vector3d::UnitX())
+		Eigen::AngleAxisd(dtor(CAM_to_FOREARM_r[0]), Eigen::Vector3d::UnitX())
 	;
-	tmp.translation() = Eigen::Vector3d(CAM_to_FOREARM_t[0], CAM_to_FOREARM_t[1], CAM_to_FOREARM_t[2]);
+	tmp.translation() = Eigen::Vector3d(-CAM_to_FOREARM_t[0], -CAM_to_FOREARM_t[1], -CAM_to_FOREARM_t[2]);
 	
 	Eigen::Affine3d inv = tmp.inverse();
 	
